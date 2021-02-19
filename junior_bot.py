@@ -2,13 +2,13 @@ class Bot:
     def __init__(self):
         self.description = "I'm a bot"
 
-    @property
-    def description(self):
-        return self.description
+    def print_description(self):
+        print(self.description)
 
 
 class TwitterBot(Bot):
     def __init__(self, consumer_key, consumer_secret, access_token, access_token_secret):
+        super().__init__()
         self.consumer_key = consumer_key
         self.consumer_secret = consumer_secret
         self.access_token = access_token
