@@ -58,13 +58,14 @@ class TwitterBot(Bot):
         if attempts == self.attempts + 1:
             print("Ha pasado demasiado tiempo, me rindo :(")
 
-    # Iterate through all of the authenticated user's friends
-    def friends(self, num_items=10):
+    # Iterate through all of the authenticated user's print_friends
+    def print_friends(self, num_items=10):
         for friend in self.limit_handled(tweepy.Cursor(self.api.friends).items(limit=num_items)):
             print(friend.screen_name, "("+str(friend.followers_count)+")")
 
-    # Iterate through the first 200 statuses in the home timeline
+    # Iterate through the first X statuses in the home timeline
     def timeline(self, num_items=10):
-        for status in self.limit_handled(tweepy.Cursor(self.api.home_timeline).items(limit=num_items)):
-            print(status.text)
-
+        lista = []
+        for status in self.limit_handled(tweepy.Cursor(self.api.home_timeline, tweet_mode="extended").items(limit=num_items)):
+            lista.append(status.full_text)
+        return lista
