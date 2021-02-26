@@ -63,6 +63,19 @@ class TwitterBot(Bot):
         if attempts == self.attempts + 1:
             print("Ha pasado demasiado tiempo, me rindo :(")
 
+    @staticmethod
+    def getStatusText(self, status):
+        if hasattr(status, "retweeted_status"):
+            try:
+                return status.retweeted_status.extended_tweet["full_text"]
+            except AttributeError:
+                return status.retweeted_status.text
+        else:
+            try:
+                return status.extended_tweet["full_text"]
+            except AttributeError:
+                return status.text
+
     # Iterate through all of the authenticated user's print_friends
     def print_friends(self, num_items=10):
         for friend in self.limit_handled(tweepy.Cursor(self.api.friends).items(limit=num_items)):
@@ -121,9 +134,9 @@ class DriveBot(Bot):
             action = propiedades[c]
             for r in range(len(tuits)):
                 if action == "texto":
-                    content = tuits[r]
+                    content = TwitterBot.getStatusText(tuits[r])
                 elif action == "longitud":
-                    content = len(tuits[r])
+                    content = len(TwitterBot.getStatusText(tuits[r]))
                 else:
-                    content = action in tuits[r]
+                    content = action in TwitterBot.getStatusText(tuits[r])
                 self.escribe(content, r + 2, c + 2)
