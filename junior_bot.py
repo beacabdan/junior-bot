@@ -22,8 +22,8 @@ class MusicBot(Bot):
     genius = None
 
     def __init__(self):
-        self.sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id="0559b9c73b0443c1b036ead955d2cba2", client_secret="469f47006dfa46d1a9c6feb2ea247305"))
-        self.genius = Genius(access_token="dY5xcdQMN245NvLEoEnXBaqu35OWwoRGPHDCWPS0WU1DBr-SHs4GdpcgmKGR-5bX")
+        self.sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id="", client_secret=""))
+        self.genius = Genius(access_token="")
 
     def get_image_of_artist(self, name):
         results = self.sp.search(q='artist:' + name, type='artist')
