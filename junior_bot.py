@@ -8,6 +8,17 @@ import gspread
 import datetime
 import numpy as np
 from sklearn.linear_model import LinearRegression
+import tensorflow as tf
+import tensorflow_hub as hub
+import matplotlib.pyplot as plt
+import tempfile
+from six.moves.urllib.request import urlopen
+from six import BytesIO
+from PIL import Image
+from PIL import ImageColor
+from PIL import ImageDraw
+from PIL import ImageFont
+from PIL import ImageOps
 
 class Bot:
     def __init__(self):
@@ -663,20 +674,6 @@ class DriveBot(Bot):
         self._document.clear()
 
 
-# Imports and function definitions
-import tensorflow as tf
-import tensorflow_hub as hub
-import matplotlib.pyplot as plt
-import tempfile
-from six.moves.urllib.request import urlopen
-from six import BytesIO
-from PIL import Image
-from PIL import ImageColor
-from PIL import ImageDraw
-from PIL import ImageFont
-from PIL import ImageOps
-
-
 class AI():
     def __init__(self):
         self._detector = None
@@ -694,7 +691,6 @@ class AI():
     @staticmethod
     def split(info_con_likes):
         return [data[:-1] for data in info_con_likes], [data[-1] for data in info_con_likes]
-
 
 # OBJECT DETECTION PART
 # ==============================================================================
@@ -796,6 +792,6 @@ class AI():
             self.display_image(image_with_boxes)
         return result["detection_class_entities"][0:log]
 
-    def detect_img(self, image_url, new_width=256, new_height=256, objects=3, display=False):
+    def detect_img(self, image_url, new_width=500, new_height=500, objects=3, display=False):
         image_path = self.download_and_resize_image(image_url, new_width, new_height)
-        self.run_detector(self.detector, image_path, objects, display)
+        return self.run_detector(self.detector, image_path, objects, display)
