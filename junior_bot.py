@@ -680,10 +680,13 @@ class DriveBot(Bot):
 
 
 class TokenEmbedding:
+    """Token Embedding."""
     def __init__(self, embedding_name):
-        self.idx_to_token, self.idx_to_vec = self._load_embedding(embedding_name)
+        self.idx_to_token, self.idx_to_vec = self._load_embedding(
+            embedding_name)
         self.unknown_idx = 0
-        self.token_to_idx = {token: idx for idx, token in enumerate(self.idx_to_token)}
+        self.token_to_idx = {
+            token: idx for idx, token in enumerate(self.idx_to_token)}
 
     def _load_embedding(self, embedding_name):
         idx_to_token, idx_to_vec = ['<unk>'], []
@@ -711,11 +714,11 @@ class TokenEmbedding:
     def __len__(self):
         return len(self.idx_to_token)
 
-
-class AI():
+class AI:
     def __init__(self):
         self._detector = None
         self.diccionario = None
+        self.glove_6b50d = None
 
     def train(self, x, y):
         self._model = LinearRegression().fit(x, y)
@@ -725,7 +728,7 @@ class AI():
         return self._model.predict(np.array(x).reshape(1, -1))
 
     def predict_likes(self, analisis):
-        return [int(max(ai.predict(line), 0)) for line in analisis]
+        return [int(max(self.predict(line), 0)) for line in analisis]
 
     @staticmethod
     def split(info_con_likes):
@@ -840,28 +843,15 @@ class AI():
         d2l.DATA_HUB['glove.6b.100d'] = (d2l.DATA_URL + 'glove.6B.100d.zip', 'cd43bfb07e44e6f27cbcc7bc9ae3d80284fdaf5a')
         d2l.DATA_HUB['glove.42b.300d'] = (d2l.DATA_URL + 'glove.42B.300d.zip', 'b5116e234e9eb9076672cfeabf5469f3eec904fa')
         d2l.DATA_HUB['wiki.en'] = (d2l.DATA_URL + 'wiki.en.zip', 'c1816da3821ae9f43899be655002f6c723e91b88')
-        self.diccionario = TokenEmbedding('glove.6b.50d')
+        self.glove_6b50d = TokenEmbedding('glove.6b.50d')
 
     @staticmethod
     def knn(W, x, k):
-        print("x.reshape(-1,)", type(x.reshape(-1,)))
-        print("np1.dot(W, x.reshape(-1,))", type(W), type(x.reshape(-1,)))
-        print("W vs numpy.array(W)", type(W), type(np1.array(W)))
-        W = np1.array(W)
-        print("W * W", type(np1.dot(W, W)))
-        print("np1.sum(W * W, axis=1)", type(np1.sum(np1.dot(W, W), axis=1)))
-        print("np1.sqrt(np1.sum(W * W, axis=1) + 1e-9)", np1.sqrt(np1.sum(np1.dot(W, W), axis=1) + 1e-9))
-        print("HERE")
-        print("np1.sqrt((x * x).sum())", np1.sqrt((x * x).sum()))
-
-        cos = np1.dot(W, x.reshape(-1,)) / (np1.sqrt(np1.sum(np1.dot(W, W), axis=1) + 1e-9) * np1.sqrt((x * x).sum()))
+        cos = np1.dot(W, x.reshape(-1,)) / (np1.sqrt(np1.sum(W * W, axis=1) + 1e-9) * np1.sqrt((x * x).sum()))
         topk = npx.topk(cos, k=k, ret_typ='indices')
         return topk, [cos[int(i)] for i in topk]
 
-    def palabras_similares(self, query_token, k=3):
-        topk, cos = self.knn(self.diccionario.idx_to_vec, self.diccionario[[query_token]], k + 1)
-        palabras = []
+    def get_similar_tokens(self, query_token, k):
+        topk, cos = self.knn(self.glove_6b50d.idx_to_vec, self.glove_6b50d[[query_token]], k + 1)
         for i, c in zip(topk[1:], cos[1:]):
-            print(self.diccionario.idx_to_token[int(i)])
-            palabras.append(self.diccionario.idx_to_token[int(i)])
-        return palabras
+            print(self.glove_6b50d.idx_to_token[int(i)])
