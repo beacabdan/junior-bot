@@ -20,9 +20,9 @@ from PIL import ImageDraw
 from PIL import ImageFont
 from PIL import ImageOps
 import os
-from mxnet import npx
-from mxnet import np as np1
-from d2l import mxnet as d2l
+# from mxnet import npx
+# from mxnet import np as np1
+# from d2l import mxnet as d2l
 
 
 class Bot:
@@ -839,21 +839,21 @@ class AI:
         image_path = self.download_and_resize_image(image_url, new_width, new_height)
         return self.run_detector(self.detector, image_path, objects, display)
 
-    def init_diccionario(self):
-        npx.set_np()
-        d2l.DATA_HUB['glove.6b.50d'] = (d2l.DATA_URL + 'glove.6B.50d.zip', '0b8703943ccdb6eb788e6f091b8946e82231bc4d')
-        d2l.DATA_HUB['glove.6b.100d'] = (d2l.DATA_URL + 'glove.6B.100d.zip', 'cd43bfb07e44e6f27cbcc7bc9ae3d80284fdaf5a')
-        d2l.DATA_HUB['glove.42b.300d'] = (d2l.DATA_URL + 'glove.42B.300d.zip', 'b5116e234e9eb9076672cfeabf5469f3eec904fa')
-        d2l.DATA_HUB['wiki.en'] = (d2l.DATA_URL + 'wiki.en.zip', 'c1816da3821ae9f43899be655002f6c723e91b88')
-        self.glove_6b50d = TokenEmbedding('glove.6b.50d')
+    # def init_diccionario(self):
+    #     npx.set_np()
+    #     d2l.DATA_HUB['glove.6b.50d'] = (d2l.DATA_URL + 'glove.6B.50d.zip', '0b8703943ccdb6eb788e6f091b8946e82231bc4d')
+    #     d2l.DATA_HUB['glove.6b.100d'] = (d2l.DATA_URL + 'glove.6B.100d.zip', 'cd43bfb07e44e6f27cbcc7bc9ae3d80284fdaf5a')
+    #     d2l.DATA_HUB['glove.42b.300d'] = (d2l.DATA_URL + 'glove.42B.300d.zip', 'b5116e234e9eb9076672cfeabf5469f3eec904fa')
+    #     d2l.DATA_HUB['wiki.en'] = (d2l.DATA_URL + 'wiki.en.zip', 'c1816da3821ae9f43899be655002f6c723e91b88')
+    #     self.glove_6b50d = TokenEmbedding('glove.6b.50d')
 
-    @staticmethod
-    def knn(W, x, k):
-        cos = np1.dot(W, x.reshape(-1, )) / (np1.sqrt(np1.sum(W * W, axis=1) + 1e-9) * np1.sqrt((x * x).sum()))
-        topk = npx.topk(cos, k=k, ret_typ='indices')
-        return topk, [cos[int(i)] for i in topk]
+    # @staticmethod
+    # def knn(W, x, k):
+    #     cos = np1.dot(W, x.reshape(-1, )) / (np1.sqrt(np1.sum(W * W, axis=1) + 1e-9) * np1.sqrt((x * x).sum()))
+    #     topk = npx.topk(cos, k=k, ret_typ='indices')
+    #     return topk, [cos[int(i)] for i in topk]
 
-    def get_similar_tokens(self, query_token, k):
-        topk, cos = self.knn(self.glove_6b50d.idx_to_vec, self.glove_6b50d[[query_token]], k + 1)
-        for i, c in zip(topk[1:], cos[1:]):
-            print(self.glove_6b50d.idx_to_token[int(i)])
+    # def get_similar_tokens(self, query_token, k):
+    #     topk, cos = self.knn(self.glove_6b50d.idx_to_vec, self.glove_6b50d[[query_token]], k + 1)
+    #     for i, c in zip(topk[1:], cos[1:]):
+    #         print(self.glove_6b50d.idx_to_token[int(i)])
