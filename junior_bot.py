@@ -851,7 +851,7 @@ class AI:
         topk = npx.topk(cos, k=k, ret_typ='indices')
         return topk, [cos[int(i)] for i in topk]
 
-    def palabras_similares(self, query_token, k):
+    def get_similar_tokens(self, query_token, k):
         topk, cos = self.knn(self.glove_6b50d.idx_to_vec, self.glove_6b50d[[query_token]], k + 1)
         for i, c in zip(topk[1:], cos[1:]):
             print(self.glove_6b50d.idx_to_token[int(i)])
