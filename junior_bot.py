@@ -680,13 +680,10 @@ class DriveBot(Bot):
 
 
 class TokenEmbedding:
-    """Token Embedding."""
     def __init__(self, embedding_name):
-        self.idx_to_token, self.idx_to_vec = self._load_embedding(
-            embedding_name)
+        self.idx_to_token, self.idx_to_vec = self._load_embedding(embedding_name)
         self.unknown_idx = 0
-        self.token_to_idx = {
-            token: idx for idx, token in enumerate(self.idx_to_token)}
+        self.token_to_idx = {token: idx for idx, token in enumerate(self.idx_to_token)}
 
     def _load_embedding(self, embedding_name):
         idx_to_token, idx_to_vec = ['<unk>'], []
@@ -847,6 +844,12 @@ class AI():
 
     @staticmethod
     def knn(W, x, k):
+        print("x.reshape(-1,)", x.reshape(-1,))
+        print("np1.dot(W, x.reshape(-1,))", np1.dot(W, x.reshape(-1,)))
+        print("np1.sum(W * W, axis=1)", np1.sum(W * W, axis=1))
+        print("np1.sqrt(np1.sum(W * W, axis=1) + 1e-9)", np1.sqrt(np1.sum(W * W, axis=1) + 1e-9))
+        print("np1.sqrt((x * x).sum())", np1.sqrt((x * x).sum()))
+
         cos = np1.dot(W, x.reshape(-1,)) / (np1.sqrt(np1.sum(W * W, axis=1) + 1e-9) * np1.sqrt((x * x).sum()))
         topk = npx.topk(cos, k=k, ret_typ='indices')
         return topk, [cos[int(i)] for i in topk]
