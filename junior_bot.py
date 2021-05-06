@@ -846,7 +846,8 @@ class AI():
     def knn(W, x, k):
         print("x.reshape(-1,)", type(x.reshape(-1,)))
         print("np1.dot(W, x.reshape(-1,))", type(W), type(x.reshape(-1,)))
-        print("np1.sum(W * W, axis=1)", np1.sum(W * W, axis=1))
+        print("W * W", type(W * W))
+        print("np1.sum(W * W, axis=1)", type(np1.sum(W * W, axis=1)))
         print("np1.sqrt(np1.sum(W * W, axis=1) + 1e-9)", np1.sqrt(np1.sum(W * W, axis=1) + 1e-9))
         print("HERE")
         print("np1.sqrt((x * x).sum())", np1.sqrt((x * x).sum()))
