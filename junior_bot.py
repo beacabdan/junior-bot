@@ -19,6 +19,10 @@ from PIL import ImageColor
 from PIL import ImageDraw
 from PIL import ImageFont
 from PIL import ImageOps
+import os
+from mxnet import npx
+from d2l import mxnet as d2l
+
 
 class Bot:
     def __init__(self):
@@ -674,9 +678,46 @@ class DriveBot(Bot):
         self._document.clear()
 
 
+class TokenEmbedding:
+    """Token Embedding."""
+    def __init__(self, embedding_name):
+        self.idx_to_token, self.idx_to_vec = self._load_embedding(
+            embedding_name)
+        self.unknown_idx = 0
+        self.token_to_idx = {
+            token: idx for idx, token in enumerate(self.idx_to_token)}
+
+    def _load_embedding(self, embedding_name):
+        idx_to_token, idx_to_vec = ['<unk>'], []
+        data_dir = d2l.download_extract(embedding_name)
+        # GloVe website: https://nlp.stanford.edu/projects/glove/
+        # fastText website: https://fasttext.cc/
+        with open(os.path.join(data_dir, 'vec.txt'), 'r') as f:
+            for line in f:
+                elems = line.rstrip().split(' ')
+                token, elems = elems[0], [float(elem) for elem in elems[1:]]
+                # Skip header information, such as the top row in fastText
+                if len(elems) > 1:
+                    idx_to_token.append(token)
+                    idx_to_vec.append(elems)
+        idx_to_vec = [[0] * len(idx_to_vec[0])] + idx_to_vec
+        return idx_to_token, np.array(idx_to_vec)
+
+    def __getitem__(self, tokens):
+        indices = [
+            self.token_to_idx.get(token, self.unknown_idx)
+            for token in tokens]
+        vecs = self.idx_to_vec[np.array(indices)]
+        return vecs
+
+    def __len__(self):
+        return len(self.idx_to_token)
+
+
 class AI():
     def __init__(self):
         self._detector = None
+        self.diccionario = None
 
     def train(self, x, y):
         self._model = LinearRegression().fit(x, y)
@@ -711,7 +752,6 @@ class AI():
         if module == "fast":
             module_handle = "https://tfhub.dev/google/faster_rcnn/openimages_v4/inception_resnet_v2/1"
         else:
-            print("(IA) Cargando el módulo por defecto (más precisión), para más velocidad, usa ai.init_detector(\"fast\").")
             module_handle = "https://tfhub.dev/google/openimages_v4/ssd/mobilenet_v2/1"
         self._detector = hub.load(module_handle).signatures['default']
 
@@ -792,6 +832,25 @@ class AI():
             self.display_image(image_with_boxes)
         return [r.decode('utf-8') for r in result["detection_class_entities"][0:log]]
 
-    def detect_objects(self, image_url, new_width=500, new_height=500, objects=3, display=False):
+    def detect_objects(self, image_url, new_width=500, new_height=500, objects=3, display=True):
         image_path = self.download_and_resize_image(image_url, new_width, new_height)
         return self.run_detector(self.detector, image_path, objects, display)
+
+    def init_diccionario(self):
+        npx.set_np()
+        d2l.DATA_HUB['glove.6b.50d'] = (d2l.DATA_URL + 'glove.6B.50d.zip', '0b8703943ccdb6eb788e6f091b8946e82231bc4d')
+        d2l.DATA_HUB['glove.6b.100d'] = (d2l.DATA_URL + 'glove.6B.100d.zip', 'cd43bfb07e44e6f27cbcc7bc9ae3d80284fdaf5a')
+        d2l.DATA_HUB['glove.42b.300d'] = (d2l.DATA_URL + 'glove.42B.300d.zip', 'b5116e234e9eb9076672cfeabf5469f3eec904fa')
+        d2l.DATA_HUB['wiki.en'] = (d2l.DATA_URL + 'wiki.en.zip', 'c1816da3821ae9f43899be655002f6c723e91b88')
+        self.diccionario = TokenEmbedding('glove.6b.50d')
+
+    @staticmethod
+    def knn(W, x, k):
+        cos = np.dot(W, x.reshape(-1,)) / (np.sqrt(np.sum(W * W, axis=1) + 1e-9) * np.sqrt((x * x).sum()))
+        topk = npx.topk(cos, k=k, ret_typ='indices')
+        return topk, [cos[int(i)] for i in topk]
+
+    def get_similar_tokens(self, query_token, k):
+        topk, cos = self.knn(self.diccionario.idx_to_vec, self.diccionario[[query_token]], k + 1)
+        for i, c in zip(topk[1:], cos[1:]):
+            print(self.diccionario.idx_to_token[int(i)])
