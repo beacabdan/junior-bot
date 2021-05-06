@@ -21,8 +21,8 @@ class MusicBot(Bot):
     sp = None
     genius = None
 
-    def __init__(self):
-        self.sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id="", client_secret=""))
+    def __init__(self, client_id, client_secret):
+        self.sp = spotipy.Spotify(auth_manager=SpotifyClientCredentials(client_id=client_id, client_secret=client_secret))
         self.genius = Genius(access_token="")
 
     def get_image_of_artist(self, name):
@@ -579,11 +579,11 @@ class TwitterBot(Bot):
         important_tokens = sorted(important_tokens, key=len)[-4:-1]
         return important_tokens[0:num]
 
-    def music_tweet(self, prob=0.5):
+    def music_tweet(self, client_id, client_secret, prob=0.5):
         if random.random() > prob:
             print("Randomly decided that no music tweet will be publishing with probability:", 1 - prob)
             return
-        m = MusicBot()
+        m = MusicBot(client_id, client_secret)
         text = m.get_lyrics_of_playlist_random_song(["Alan Parsons"])
         self.tweet_status(text)
 
@@ -663,7 +663,24 @@ class DriveBot(Bot):
         self._document.clear()
 
 
+# Imports and function definitions
+import tensorflow as tf
+import tensorflow_hub as hub
+import matplotlib.pyplot as plt
+import tempfile
+from six.moves.urllib.request import urlopen
+from six import BytesIO
+from PIL import Image
+from PIL import ImageColor
+from PIL import ImageDraw
+from PIL import ImageFont
+from PIL import ImageOps
+
+
 class AI():
+    def __init__(self):
+        self._detector = None
+
     def train(self, x, y):
         self._model = LinearRegression().fit(x, y)
         print("(IA) Modelo entrenado, listo para usar.")
@@ -677,3 +694,108 @@ class AI():
     @staticmethod
     def split(info_con_likes):
         return [data[:-1] for data in info_con_likes], [data[-1] for data in info_con_likes]
+
+
+# OBJECT DETECTION PART
+# ==============================================================================
+# Copyright 2018 The TensorFlow Hub Authors. All Rights Reserved.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#     http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ==============================================================================
+
+    # Pick an object detection module. FasterRCNN+InceptionResNet V2: high accuracy, ssd+mobilenet V2: small and fast.
+    def init_detector(self, module="default"):
+        if module == "fast":
+            module_handle = "https://tfhub.dev/google/faster_rcnn/openimages_v4/inception_resnet_v2/1"
+        else:
+            print("(IA) Cargando el módulo por defecto (más precisión), para más velocidad, usa ai.init_detector(\"fast\").")
+            module_handle = "https://tfhub.dev/google/openimages_v4/ssd/mobilenet_v2/1"
+        self._detector = hub.load(module_handle).signatures['default']
+
+    @property
+    def detector(self):
+        return self._detector
+
+    @detector.setter
+    def detector(self, detector):
+        self._detector = detector
+
+    @staticmethod
+    def display_image(image):
+        fig = plt.figure(figsize=(7, 7))
+        plt.grid(False)
+        plt.imshow(image)
+
+    def download_and_resize_image(self, url, new_width, new_height, display=False):
+        _, filename = tempfile.mkstemp(suffix=".jpg")
+        response = urlopen(url)
+        image_data = response.read()
+        image_data = BytesIO(image_data)
+        pil_image = Image.open(image_data)
+        pil_image = ImageOps.fit(pil_image, (new_width, new_height), Image.ANTIALIAS)
+        pil_image_rgb = pil_image.convert("RGB")
+        pil_image_rgb.save(filename, format="JPEG", quality=90)
+        if display:
+            self.display_image(pil_image)
+        return filename
+
+    def draw_bounding_box_on_image(self, image, ymin, xmin, ymax, xmax, color, font, thickness=4, display_str_list=()):
+        """Adds a bounding box to an image."""
+        draw = ImageDraw.Draw(image)
+        im_width, im_height = image.size
+        (left, right, top, bottom) = (xmin * im_width, xmax * im_width, ymin * im_height, ymax * im_height)
+        draw.line([(left, top), (left, bottom), (right, bottom), (right, top), (left, top)], width=thickness, fill=color)
+        display_str_heights = [font.getsize(ds)[1] for ds in display_str_list]
+        total_display_str_height = (1 + 2 * 0.05) * sum(display_str_heights)
+
+        if top > total_display_str_height:
+            text_bottom = top
+        else:
+            text_bottom = top + total_display_str_height
+        # Reverse list and print from bottom to top.
+        for display_str in display_str_list[::-1]:
+            text_width, text_height = font.getsize(display_str)
+            margin = np.ceil(0.05 * text_height)
+            draw.rectangle([(left, text_bottom - text_height - 2 * margin), (left + text_width, text_bottom)], fill=color)
+            draw.text((left + margin, text_bottom - text_height - margin), display_str, fill="black", font=font)
+            text_bottom -= text_height - 2 * margin
+
+    def draw_boxes(self, image, boxes, class_names, scores, max_boxes=10, min_score=0.1):
+        colors = list(ImageColor.colormap.values())
+        font = ImageFont.load_default()
+        for i in range(min(boxes.shape[0], max_boxes)):
+            if scores[i] >= min_score:
+                ymin, xmin, ymax, xmax = tuple(boxes[i])
+                display_str = "{}: {}%".format(class_names[i].decode("ascii"), int(100 * scores[i]))
+                color = colors[hash(class_names[i]) % len(colors)]
+                image_pil = Image.fromarray(np.uint8(image)).convert("RGB")
+                self.draw_bounding_box_on_image(image_pil, ymin, xmin, ymax, xmax, color, font, display_str_list=[display_str])
+                np.copyto(image, np.array(image_pil))
+        return image
+
+    @staticmethod
+    def load_img(path):
+        img = tf.io.read_file(path)
+        img = tf.image.decode_jpeg(img, channels=3)
+        return img
+
+    def run_detector(self, detector, path, log, display):
+        img = self.load_img(path)
+        converted_img = tf.image.convert_image_dtype(img, tf.float32)[tf.newaxis, ...]
+        result = detector(converted_img)
+        result = {key: value.numpy() for key, value in result.items()}
+        if display:
+            image_with_boxes = self.draw_boxes(img.numpy(), result["detection_boxes"], result["detection_class_entities"], result["detection_scores"], log)
+            self.display_image(image_with_boxes)
+        return result["detection_class_entities"][0:log]
+
+    def detect_img(self, image_url, new_width=256, new_height=256, objects=3, display=False):
+        image_path = self.download_and_resize_image(image_url, new_width, new_height)
+        self.run_detector(self.detector, image_path, objects, display)
