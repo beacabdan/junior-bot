@@ -844,11 +844,11 @@ class AI():
 
     @staticmethod
     def knn(W, x, k):
-        print("x.reshape(-1,):", type(x.reshape(-1,)))
-        print("np1.dot(W, x.reshape(-1,)):", type(W), type(x.reshape(-1,)))
-        quit()
-        print("np1.sum(W * W, axis=1):", np1.sum(W * W, axis=1))
+        print("x.reshape(-1,)", type(x.reshape(-1,)))
+        print("np1.dot(W, x.reshape(-1,))", type(W), type(x.reshape(-1,)))
+        print("np1.sum(W * W, axis=1)", np1.sum(W * W, axis=1))
         print("np1.sqrt(np1.sum(W * W, axis=1) + 1e-9)", np1.sqrt(np1.sum(W * W, axis=1) + 1e-9))
+        print("HERE")
         print("np1.sqrt((x * x).sum())", np1.sqrt((x * x).sum()))
 
         cos = np1.dot(W, x.reshape(-1,)) / (np1.sqrt(np1.sum(W * W, axis=1) + 1e-9) * np1.sqrt((x * x).sum()))
@@ -856,7 +856,6 @@ class AI():
         return topk, [cos[int(i)] for i in topk]
 
     def palabras_similares(self, query_token, k=3):
-        print("HERE")
         topk, cos = self.knn(self.diccionario.idx_to_vec, self.diccionario[[query_token]], k + 1)
         palabras = []
         for i, c in zip(topk[1:], cos[1:]):
