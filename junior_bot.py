@@ -21,6 +21,7 @@ from PIL import ImageFont
 from PIL import ImageOps
 import os
 from mxnet import npx
+from mxnet import np as np1
 from d2l import mxnet as d2l
 
 
@@ -846,13 +847,15 @@ class AI():
 
     @staticmethod
     def knn(W, x, k):
-        cos = np.dot(W, x.reshape(-1,)) / (np.sqrt(np.sum(W * W, axis=1) + 1e-9) * np.sqrt((x * x).sum()))
+        cos = np1.dot(W, x.reshape(-1,)) / (np1.sqrt(np1.sum(W * W, axis=1) + 1e-9) * np1.sqrt((x * x).sum()))
         topk = npx.topk(cos, k=k, ret_typ='indices')
         return topk, [cos[int(i)] for i in topk]
 
     def palabras_similares(self, query_token, k=3):
+        print("HERE")
         topk, cos = self.knn(self.diccionario.idx_to_vec, self.diccionario[[query_token]], k + 1)
         palabras = []
         for i, c in zip(topk[1:], cos[1:]):
+            print(self.diccionario.idx_to_token[int(i)])
             palabras.append(self.diccionario.idx_to_token[int(i)])
         return palabras
