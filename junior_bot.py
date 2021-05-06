@@ -681,6 +681,7 @@ class DriveBot(Bot):
 
 class TokenEmbedding:
     """Token Embedding."""
+
     def __init__(self, embedding_name):
         self.idx_to_token, self.idx_to_vec = self._load_embedding(
             embedding_name)
@@ -714,6 +715,7 @@ class TokenEmbedding:
     def __len__(self):
         return len(self.idx_to_token)
 
+
 class AI:
     def __init__(self):
         self._detector = None
@@ -734,19 +736,19 @@ class AI:
     def split(info_con_likes):
         return [data[:-1] for data in info_con_likes], [data[-1] for data in info_con_likes]
 
-# OBJECT DETECTION PART
-# ==============================================================================
-# Copyright 2018 The TensorFlow Hub Authors. All Rights Reserved.
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#     http://www.apache.org/licenses/LICENSE-2.0
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
+    # OBJECT DETECTION PART
+    # ==============================================================================
+    # Copyright 2018 The TensorFlow Hub Authors. All Rights Reserved.
+    # Licensed under the Apache License, Version 2.0 (the "License");
+    # you may not use this file except in compliance with the License.
+    # You may obtain a copy of the License at
+    #     http://www.apache.org/licenses/LICENSE-2.0
+    # Unless required by applicable law or agreed to in writing, software
+    # distributed under the License is distributed on an "AS IS" BASIS,
+    # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    # See the License for the specific language governing permissions and
+    # limitations under the License.
+    # ==============================================================================
 
     # Pick an object detection module. FasterRCNN+InceptionResNet V2: high accuracy, ssd+mobilenet V2: small and fast.
     def init_detector(self, module="default"):
@@ -847,7 +849,7 @@ class AI:
 
     @staticmethod
     def knn(W, x, k):
-        cos = np1.dot(W, x.reshape(-1,)) / (np1.sqrt(np1.sum(W * W, axis=1) + 1e-9) * np1.sqrt((x * x).sum()))
+        cos = np1.dot(W, x.reshape(-1, )) / (np1.sqrt(np1.sum(W * W, axis=1) + 1e-9) * np1.sqrt((x * x).sum()))
         topk = npx.topk(cos, k=k, ret_typ='indices')
         return topk, [cos[int(i)] for i in topk]
 
