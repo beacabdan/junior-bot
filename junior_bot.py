@@ -790,9 +790,8 @@ class AI():
         if display:
             image_with_boxes = self.draw_boxes(img.numpy(), result["detection_boxes"], result["detection_class_entities"], result["detection_scores"], log)
             self.display_image(image_with_boxes)
-        print(result["detection_class_entities"][0:log])
         return [r.decode('utf-8') for r in result["detection_class_entities"][0:log]]
 
-    def detect_img(self, image_url, new_width=500, new_height=500, objects=3, display=False):
+    def detect_objects(self, image_url, new_width=500, new_height=500, objects=3, display=False):
         image_path = self.download_and_resize_image(image_url, new_width, new_height)
         return self.run_detector(self.detector, image_path, objects, display)
