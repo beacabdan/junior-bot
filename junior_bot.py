@@ -309,7 +309,7 @@ class TwitterBot(Bot):
         counter = 0
         query_str = ""
         for e in query:
-            query_str += e
+            query_str += e + " "
         print("(TWEETBOT) Buscando:", query_str)
         for status in self.limit_handled(tweepy.Cursor(self.api.search, q=query_str).items(limit=max_status)):
             print("Encontrado:", self.getStatusText(status))
