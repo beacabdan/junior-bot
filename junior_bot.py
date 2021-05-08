@@ -20,6 +20,8 @@ from PIL import ImageDraw
 from PIL import ImageFont
 from PIL import ImageOps
 import os
+
+
 # from mxnet import npx
 # from mxnet import np as np1
 # from d2l import mxnet as d2l
