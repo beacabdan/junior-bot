@@ -298,23 +298,11 @@ class TwitterBot(Bot):
                 continue
             if not (antiguedad_min <= abs((datetime.datetime.today() - status.created_at).seconds // 60) <= antiguedad_max):
                 continue
-            self.api.create_favorite(status.id)
-            counter += 1
-        print("(TWEETBOT)", counter, "likes.")
-
-    def like_tuits(self, max_status=10, longitud_min=1, longitud_max=9999999, lineas_min=1, lineas_max=9999999, likes_min=0, likes_max=9999999, antiguedad_min=0, antiguedad_max=9999999):
-        counter = 0
-        for status in self.limit_handled(tweepy.Cursor(self.api.home_timeline, tweet_mode="extended").items(limit=max_status)):
-            if not (longitud_min <= len(self.getStatusText(status)) <= longitud_max):
-                continue
-            if not (likes_min <= status.favorite_count <= likes_max):
-                continue
-            if not (lineas_min <= self.getStatusText(status).count("\n") + 1 <= lineas_max):
-                continue
-            if not (antiguedad_min <= abs((datetime.datetime.today() - status.created_at).seconds // 60) <= antiguedad_max):
-                continue
-            self.api.create_favorite(status.id)
-            counter += 1
+            try:
+                self.api.create_favorite(status.id)
+                counter += 1
+            except:
+                pass
         print("(TWEETBOT)", counter, "likes.")
 
     def retweet_from_query(self, query, max_status=10, longitud_min=1, longitud_max=9999999, lineas_min=1, lineas_max=9999999, likes_min=0, likes_max=9999999, antiguedad_min=0, antiguedad_max=9999999):
@@ -337,9 +325,12 @@ class TwitterBot(Bot):
                 continue
             if not (antiguedad_min <= abs((datetime.datetime.today() - status.created_at).seconds // 60) <= antiguedad_max):
                 continue
-            self.api.retweet(status.id)
-            print("(TWEETBOT) Retweeted:", self.getStatusText(status))
-            counter += 1
+            try:
+                self.api.retweet(status.id)
+                print("(TWEETBOT) Retweeted:", self.getStatusText(status))
+                counter += 1
+            except:
+                pass
         print("(TWEETBOT)", counter, "retweets.")
 
     def analiza_timeline(self, propiedades, num=10):
