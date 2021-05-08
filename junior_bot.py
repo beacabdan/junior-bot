@@ -300,6 +300,46 @@ class TwitterBot(Bot):
             counter += 1
         print("(TWEETBOT)", counter, "likes.")
 
+    def like_tuits(self, max_status=10, longitud_min=1, longitud_max=9999999, lineas_min=1, lineas_max=9999999, likes_min=0, likes_max=9999999, antiguedad_min=0, antiguedad_max=9999999):
+        counter = 0
+        for status in self.limit_handled(tweepy.Cursor(self.api.home_timeline, tweet_mode="extended").items(limit=max_status)):
+            if not (longitud_min <= len(self.getStatusText(status)) <= longitud_max):
+                continue
+            if not (likes_min <= status.favorite_count <= likes_max):
+                continue
+            if not (lineas_min <= self.getStatusText(status).count("\n") + 1 <= lineas_max):
+                continue
+            if not (antiguedad_min <= abs((datetime.datetime.today() - status.created_at).seconds // 60) <= antiguedad_max):
+                continue
+            self.api.create_favorite(status.id)
+            counter += 1
+        print("(TWEETBOT)", counter, "likes.")
+
+    def retweet_from_query(self, query, max_status=10, longitud_min=1, longitud_max=9999999, lineas_min=1, lineas_max=9999999, likes_min=0, likes_max=9999999, antiguedad_min=0, antiguedad_max=9999999):
+        counter = 0
+        query_str = ""
+        for e in query:
+            query_str += e
+        for status in self.limit_handled(tweepy.Cursor(self.api.search, q=query_str).items(limit=max_status)):
+            contains = False
+            for word in query:
+                if word in self.getStatusText(status):
+                    contains = True
+            if not contains:
+                continue
+            if not (longitud_min <= len(self.getStatusText(status)) <= longitud_max):
+                continue
+            if not (likes_min <= status.favorite_count <= likes_max):
+                continue
+            if not (lineas_min <= self.getStatusText(status).count("\n") + 1 <= lineas_max):
+                continue
+            if not (antiguedad_min <= abs((datetime.datetime.today() - status.created_at).seconds // 60) <= antiguedad_max):
+                continue
+            self.api.retweet(status.id)
+            print("(TWEETBOT) Retweeted:", self.getStatusText(status))
+            counter += 1
+        print("(TWEETBOT)", counter, "retweets.")
+
     def analiza_timeline(self, propiedades, num=10):
         tuits = self.timeline(num)
         print("(TWITTERBOT) Analizando timeline:", end=" ")
