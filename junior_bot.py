@@ -310,7 +310,9 @@ class TwitterBot(Bot):
         query_str = ""
         for e in query:
             query_str += e
+        print("(TWEETBOT) Buscando:", query_str)
         for status in self.limit_handled(tweepy.Cursor(self.api.search, q=query_str).items(limit=max_status)):
+            print("Encontrado:", self.getStatusText(status))
             contains = False
             for word in query:
                 if word in self.getStatusText(status):
@@ -327,7 +329,7 @@ class TwitterBot(Bot):
                 continue
             try:
                 self.api.retweet(status.id)
-                print("(TWEETBOT) Retweeted:", self.getStatusText(status))
+                print("Retuit!")
                 counter += 1
             except:
                 pass
