@@ -20,6 +20,8 @@ from PIL import ImageDraw
 from PIL import ImageFont
 from PIL import ImageOps
 import os
+from google.colab.patches import cv2_imshow
+import cv2
 
 
 # from mxnet import npx
@@ -666,7 +668,7 @@ class TwitterBot(Bot):
 
 
 class DriveBot(Bot):
-    def __init__(self, file=""):
+    def __init__(self, file="", sheet="Sheet1"):
         super().__init__()
         self._description = "I'm a bot that can be used to read and write Drive files!"
 
@@ -676,20 +678,29 @@ class DriveBot(Bot):
         self.gc = gspread.authorize(gauth.credentials)
         self.drive = GoogleDrive(gauth)
 
-        if file != "":
-            self.look_for_file(file)
+        try:
+            if file != "":
+                self.look_for_file(file)
+            self._sheet = self.read_worksheet(sheet)
+            self._openSheet = sheet
+        except:
+            print("(DRIVEBOT) No he podido encontrar ningún archivo llamado \"" + file + "\". Lo siento.")
 
     def look_for_file(self, nombre_archivo):
         gfile = self.drive.ListFile({'q': "title contains '" + nombre_archivo + "'"}).GetList()[0]
-        self._document = self.gc.open(gfile['title']).sheet1
-        print("(DRIVEBOT) \"" + nombre_archivo + "\" abierto con éxito.")
+        self._document = self.gc.open(gfile['title'])
+        print("(DRIVEBOT) \"" + gfile['title'] + "\" abierto con éxito.")
 
     @property
     def document(self):
         return self._document
 
-    def escribe(self, texto, fila, columna):
-        self._document.update_cell(fila, columna, texto)
+    @property
+    def sheet(self):
+        return self._sheet
+
+    def escribe(self, texto, fila, columna, sheet="Sheet1"):
+        self.document.worksheet(sheet).update_cell(fila, columna, texto)
 
     def escribe_lista(self, lista, foc, fila, columna, titulo=""):
         if titulo != "":
@@ -712,6 +723,17 @@ class DriveBot(Bot):
 
     def borrar_todo(self):
         self._document.clear()
+
+    def read_worksheet(self, title):
+        sheet = []
+        worksheet = self.document.worksheet(title)
+        rows = len(worksheet.col_values(1))
+        for r in range(2, rows + 1):
+            row = worksheet.row_values(r)
+            sheet.append({"frase": row[0], "tags": row[1].split(", "), "idioma": row[2].split(", "), "imagen": row[3]})
+        self._openSheet = title
+        self._sheet = sheet
+        return sheet
 
 
 class TokenEmbedding:
@@ -752,11 +774,73 @@ class TokenEmbedding:
 
 
 class AI:
-    def __init__(self):
+    def __init__(self, file=""):
         self._detector = None
         self.diccionario = None
         self.glove_6b50d = None
 
+        super().__init__()
+        if file != "":
+            self._db = DriveBot(file)
+        print("(AI) Inicializada.")
+
+    # vvv chatbot vvvvvvv
+
+    def dame_info_frase(self, frase):
+        if "Sheet1" != self._db._openSheet:
+            self._db.read_worksheet("Sheet1")
+        is_pregunta = "?" in frase
+        frase = frase.lower()
+        try:
+            return random.choice(list(filter(lambda entry: frase in entry["frase"].lower() or entry["frase"].lower() in frase, self._db.sheet)))
+        except:
+            return {"frase": frase, "tags": ["pregunta" if is_pregunta else "respuesta"], "idioma": [], "imagen": "idle"}
+
+    def dame_respuesta(self, frase, images=True):
+        info = self.dame_info_frase(frase)
+        try:
+            appropriate_answers = []
+            user_tags = info["tags"]
+            lang = info["idioma"]
+            for entry in self._db.sheet:
+                if entry["frase"] == frase:
+                    continue
+                same_lang = False
+                for l in entry["idioma"]:
+                    if l in lang:
+                        same_lang = True
+                if not same_lang:
+                    continue
+                if "pregunta" in user_tags and "respuesta" not in entry["tags"] or "respuesta" in user_tags and ("pregunta" in entry["tags"] and not "respuesta" in entry["tags"]) or "pregunta" not in user_tags and "pregunta" in entry["tags"]:
+                    continue
+                appropriate = True
+                for tag in entry["tags"]:
+                    if tag not in user_tags + ["pregunta", "respuesta"]:
+                        appropriate = False
+                if appropriate:
+                    appropriate_answers.append(entry)
+                if "orden" in user_tags:
+                    appropriate_answers = ["He recibido una orden. Intento llevarla a cabo."]
+            frase = random.choice(appropriate_answers)
+            if images:
+                try:
+                    img = cv2.imread(frase["imagen"] + ".jpg", cv2.IMREAD_UNCHANGED)
+                    img = cv2.resize(img, (int(img.shape[1] / img.shape[1] * 100), int(img.shape[0] / img.shape[1] * 100)))
+                    cv2_imshow(img)
+                except:
+                    pass
+            return frase["frase"]
+        except:
+            pass
+        return "Lo siento. No te he entendido."
+
+    def prueba_todas_frases(self, images=True):
+        for frase in self._db.sheet:
+            print("USER:", frase["frase"])
+            reply = self.dame_respuesta(frase["frase"])
+            print("BOT:", reply, "\n")
+
+    # vvvvvvvv regression vvvvvvvvv
     def train(self, x, y):
         self._model = LinearRegression().fit(x, y)
         print("(IA) Modelo entrenado, listo para usar.")
