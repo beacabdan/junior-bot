@@ -773,7 +773,7 @@ class TokenEmbedding:
         return len(self.idx_to_token)
 
 
-class AI:
+class AI(Bot):
     def __init__(self, file=""):
         self._detector = None
         self.diccionario = None
@@ -794,6 +794,7 @@ class AI:
         try:
             return random.choice(list(filter(lambda entry: frase in entry["frase"].lower() or entry["frase"].lower() in frase, self._db.sheet)))
         except:
+            print("dame_info_frase devuelve \"default\"")
             return {"frase": frase, "tags": ["pregunta" if is_pregunta else "respuesta"], "idioma": [], "imagen": "idle"}
 
     def dame_respuesta(self, frase, images=True):
@@ -831,6 +832,7 @@ class AI:
                     pass
             return frase["frase"]
         except:
+            print("algo ha ido mal en dame_respuesta")
             pass
         return "Lo siento. No te he entendido."
 
