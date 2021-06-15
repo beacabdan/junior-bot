@@ -22,6 +22,7 @@ from PIL import ImageOps
 import os
 from google.colab.patches import cv2_imshow
 import cv2
+import random
 
 
 # from mxnet import npx
@@ -794,7 +795,7 @@ class AI(Bot):
         try:
             return random.choice(list(filter(lambda entry: frase in entry["frase"].lower() or entry["frase"].lower() in frase, self._db.sheet)))
         except:
-            print("dame_info_frase devuelve \"default\"")
+            # print("dame_info_frase devuelve \"default\"")
             return {"frase": frase, "tags": ["pregunta" if is_pregunta else "respuesta"], "idioma": [], "imagen": "idle"}
 
     def dame_respuesta(self, frase, images=True):
@@ -804,6 +805,7 @@ class AI(Bot):
             user_tags = info["tags"]
             lang = info["idioma"]
             for entry in self._db.sheet:
+                # print("dame_respuesta,", entry)
                 if entry["frase"] == frase:
                     continue
                 same_lang = False
@@ -814,6 +816,7 @@ class AI(Bot):
                     continue
                 if "pregunta" in user_tags and "respuesta" not in entry["tags"] or "respuesta" in user_tags and ("pregunta" in entry["tags"] and not "respuesta" in entry["tags"]) or "pregunta" not in user_tags and "pregunta" in entry["tags"]:
                     continue
+                # print("dame_respuesta, conditions apply")
                 appropriate = True
                 for tag in entry["tags"]:
                     if tag not in user_tags + ["pregunta", "respuesta"]:
@@ -822,6 +825,7 @@ class AI(Bot):
                     appropriate_answers.append(entry)
                 if "orden" in user_tags:
                     appropriate_answers = ["He recibido una orden. Intento llevarla a cabo."]
+            # print("dame_respuesta, lista de frases lista")
             frase = random.choice(appropriate_answers)
             if images:
                 try:
@@ -832,7 +836,7 @@ class AI(Bot):
                     pass
             return frase["frase"]
         except:
-            print("algo ha ido mal en dame_respuesta")
+            # print("algo ha ido mal en dame_respuesta")
             pass
         return "Lo siento. No te he entendido."
 
