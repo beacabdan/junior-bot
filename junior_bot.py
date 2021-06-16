@@ -1,5 +1,4 @@
 import tweepy
-import time
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 from google.colab import auth
@@ -24,6 +23,7 @@ from google.colab.patches import cv2_imshow
 import cv2
 import random
 from ColabTurtle.Turtle import *
+from datetime import *
 
 
 # from mxnet import npx
@@ -986,15 +986,15 @@ class AI(Bot):
 
 
 class HouseBot(Bot):
-    def __init__(self, width=400, height=300, speed=10):
+    def __init__(self, width=400, height=300):
         # Initialize the turtle library
         self._width = width
         self._height = height
         self._plan = []
-        initializeTurtle(speed, (int(width), int(height)))
-        bgcolor("white")
-        pencolor("black")
-        hideturtle()
+        self._prop_abierto = 1
+        self._num_doors = 0
+        self._estado_puertas = []
+        self._prop_abierto_horas = [1 for _ in range(24)]
         print("(DRAWINGBOT) Inicializado.")
 
     @property
@@ -1074,8 +1074,37 @@ class HouseBot(Bot):
             self.dibuixa_linia(x + math.cos(i) * r, y + math.sin(i) * r, x + math.cos(i + step * math.pi / 180) * r, y + math.sin(i + step * math.pi / 180) * r)
         self.ir_a(x, y)
 
-    def dibuja_plano(self, plan, scale=0.75, filled=False):
+    def load_plano(self, plan):
+        hp = len(plan)
+        for i in range(hp - 1):
+            if len(plan[i]) != len(plan[i + 1]):
+                print("(DRAWINGBOT) El plano está mal creado!")
+                return
+        wp = len(plan[0])
         self._plan = plan
+        self._estado_puertas = []
+        for y in range(hp):
+            for x in range(wp - 1):
+                if plan[y][x] in "pPdDcC":
+                    self._estado_puertas.append(plan[y][x] not in "cC")
+        self._prop_abierto = 0
+        self._num_doors = 0
+        for y in range(hp):
+            for x in range(wp - 1):
+                if plan[y][x] in "pPdD":
+                    self._prop_abierto += 1
+                if plan[y][x] in "pPdDcC":
+                    self._num_doors += 1
+
+        self._prop_abierto /= self._num_doors
+
+    def dibuja_plano(self, plan, scale=0.75, filled=False, speed=10):
+        initializeTurtle(speed, (int(self._width), int(self._height)))
+        bgcolor("white")
+        pencolor("black")
+        hideturtle()
+
+        self.load_plano(plan)
         hp = len(plan)
         for i in range(hp - 1):
             if len(plan[i]) != len(plan[i + 1]):
@@ -1118,37 +1147,10 @@ class HouseBot(Bot):
                         continue
                     self.emplena_quadrat(door_radius * 2, x=width, y=height, color="black")
                 elif plan[y][x] in "pPdDcC":
-                    if y == 0:
-                        case = "up"
-                    elif y == hp - 1:
-                        case = "down"
-                    elif x == 0:
-                        case = "left"
-                    elif x == wp - 1:
-                        case = "right"
+                    if plan[y][x] not in "cC":
+                        self.abre_puerta(x, y, first=True)
                     else:
-                        if plan[y][x - 1] != " " and plan[y][x + 1] != " ":
-                            if plan[y - 1][x] == " ":
-                                case = "up"
-                            elif plan[y + 1][x] == " ":
-                                case = "down"
-                        elif plan[y - 1][x] != " " and plan[y + 1][x] != " ":
-                            if plan[y][x - 1] == " ":
-                                case = "left"
-                            else:
-                                case = "right"
-                    if case in ["left", "right"]:
-                        try:
-                            side = "r" if plan[y - 1][x] in "pPdDcC" else "l"
-                        except:
-                            side = "l" if plan[y + 1][x] in "pPdDcC" else "r"
-                    else:
-                        try:
-                            side = "r" if plan[y][x + 1] in "pPdDcC" else "l"
-                        except:
-                            side = "l" if plan[y][x - 1] in "pPdDcC" else "r"
-
-                    self.dibuja_puerta(door_radius, width, height, case=case, side=side, open=plan[y][x] not in "cC")
+                        self.cierra_puerta(x, y, first=True)
 
     def dibuja_puerta(self, door_radius, width, height, case="up", side="r", open=True):
         x_delay = 0
@@ -1273,9 +1275,9 @@ class HouseBot(Bot):
                 side = "l" if self._plan[y][x - 1] in "pPdDcC" else "r"
         return door_radius, width, height, case, side
 
-    def abre_puerta(self, x, y, no=-1, scale=0.75):
+    def abre_puerta(self, x, y, no=-1, first=False):
         self._plan[y] = list(self._plan[y])
-        if self._plan[y][x] not in "Cc":
+        if self._plan[y][x] not in "Cc" and not first:
             print("Imposible abrir la puerta en", x, y, end=" ")
             if self._plan[y][x] in "PpDd":
                 print("(porque ya está abierta).")
@@ -1287,9 +1289,9 @@ class HouseBot(Bot):
         self.dibuja_puerta(door_radius, width, height, case=case, side=side, open=True)
         # print("Opened door at", x, y)
 
-    def cierra_puerta(self, x, y, no=-1):
+    def cierra_puerta(self, x, y, no=-1, first=False):
         self._plan[y] = list(self._plan[y])
-        if self._plan[y][x] not in "PpDd":
+        if self._plan[y][x] not in "PpDd" and not first:
             print("Imposible cerrar la puerta en", x, y, end=" ")
             if self._plan[y][x] in "Cc":
                 print("(porque ya está cerrada).")
@@ -1316,9 +1318,55 @@ class HouseBot(Bot):
             print("Por favor, usa sólo números enteros (sin decimales).")
             orden = "error"
 
-        if orden.lower() == "cerrar":
-            self.cierra_puerta(x, y)
-        elif orden.lower() == "abrir":
-            self.abre_puerta(x, y)
+        if orden == "cerrar" or orden == "abrir":
+            if orden == "cerrar":
+                self.cierra_puerta(x, y)
+            else:
+                self.abre_puerta(x, y)
+            self._prop_abierto = 0
+            for y in range(len(self._plan)):
+                for x in range(len(self._plan[0]) - 1):
+                    if plan[y][x] in "pPdD":
+                        self._prop_abierto += 1
+            self._prop_abierto /= self._num_doors
+            self._estado_puertas = []
+            for y in range(len(self._plan)):
+                for x in range(len(self._plan[0]) - 1):
+                    if plan[y][x] in "pPdDcC":
+                        self._estado_puertas.append(plan[y][x] not in "cC")
         else:
             print("Lo siento, no te he entendido.\n\nEjemplos de uso: \"abrir 1 0\" \"cerrar 3 4\".\nPara salir, escribe \"salir\".")
+
+    """ vvvvvv CODIGO NUEVO vvvvvvvv """
+
+    @staticmethod
+    def get_temperature_outside(t):
+        return math.sin(t / 24 * math.pi * 2 - math.pi / 2) * 3 + 23
+
+    @staticmethod
+    def get_temperature_closed(t):
+        return round(math.sin(t / 24 * math.pi * 2 - 3 * math.pi / 4) * 1.5 + 22.5, 2)
+
+    def get_current_temperature(self, t):
+        prop = self._prop_abierto_horas[t]
+        return prop * self.get_temperature_outside(t) + (1 - prop) * self.get_temperature_closed(t)
+
+    def estudio_temperatura(self):
+        temperatures = []
+        temperatures_interior = []
+        for i in range(48):
+            t = i % 24
+            temperatures.append(self.get_temperature_outside(t))
+            temperatures_interior.append(self.get_current_temperature(t))
+        plt.figure(figsize=(7, 7))
+        plt.subplot(2, 1, 1)
+        plt.plot(temperatures, "--")
+        plt.plot(temperatures_interior)
+        plt.ylabel("Temperatura (ºC)")
+        plt.title("Temperatura a lo largo de dos días")
+        plt.legend({"exterior", "interior"})
+        plt.subplot(2, 1, 2)
+        plt.plot([elem * 100 for elem in self._prop_abierto_horas] * 2)
+        plt.xlabel("Horas")
+        plt.ylabel("(%)")
+        plt.title("Apertura de puertas y ventanas")
