@@ -994,6 +994,7 @@ class HouseBot(Bot):
         initializeTurtle(speed, (int(width), int(height)))
         bgcolor("white")
         pencolor("black")
+        hideturtle()
         print("(DRAWINGBOT) Inicializado.")
 
     @property
