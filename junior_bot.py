@@ -1283,11 +1283,12 @@ class HouseBot(Bot):
                 print("(porque ya está abierta).")
             else:
                 print("(contiene " + self._plan[y][x] + ").")
-            return
+            return -1
         self._plan[y][x] = "P"
         door_radius, width, height, case, side = self.tipo_puerta(x, y)
         self.dibuja_puerta(door_radius, width, height, case=case, side=side, open=True)
         # print("Opened door at", x, y)
+        return 1
 
     def cierra_puerta(self, x, y, no=-1, first=False):
         self._plan[y] = list(self._plan[y])
@@ -1297,7 +1298,7 @@ class HouseBot(Bot):
                 print("(porque ya está cerrada).")
             else:
                 print("(contiene " + self._plan[y][x] + ").")
-            return
+            return -1
         self._plan[y][x] = "C"
         door_radius, width, height, case, side = self.tipo_puerta(x, y)
         delayx = 0 if case in ["up", "down"] else (-door_radius if case[0] == "l" else door_radius)
@@ -1308,6 +1309,7 @@ class HouseBot(Bot):
                            width + delayx - (door_radius if case in ["up", "down"] else 0) + (2 * door_radius if case in ["up", "down"] else 0) + (door_radius if case == "left" else 0) - (door_radius if case == "right" else 0),
                            height + delayy + (door_radius if case == "up" else 0) - (door_radius if case == "down" else 0) + (door_radius if case == "left" else 0) + (door_radius if case == "right" else 0))
         # print("Closed door at", x, y)
+        return 1
 
     def dar_orden(self, user):
         try:
@@ -1317,12 +1319,12 @@ class HouseBot(Bot):
         except:
             print("Por favor, usa sólo números enteros (sin decimales).")
             orden = "error"
-
+        code = -1
         if orden == "cerrar" or orden == "abrir":
             if orden == "cerrar":
-                self.cierra_puerta(x, y)
+                code = self.cierra_puerta(x, y)
             else:
-                self.abre_puerta(x, y)
+                code = self.abre_puerta(x, y)
             self._prop_abierto = 0
             for y in range(len(self._plan)):
                 for x in range(len(self._plan[0]) - 1):
@@ -1336,6 +1338,7 @@ class HouseBot(Bot):
                         self._estado_puertas.append(self._plan[y][x] not in "cC")
         else:
             print("Lo siento, no te he entendido.\n\nEjemplos de uso: \"abrir 1 0\" \"cerrar 3 4\".\nPara salir, escribe \"salir\".")
+        return code
 
     """ vvvvvv CODIGO NUEVO vvvvvvvv """
 
@@ -1376,10 +1379,11 @@ class HouseBot(Bot):
         plt.title("Apertura de puertas y ventanas")
 
     def ventanas_abiertas(self, ventanas=None):
-        if not ventanas:
-            ventanas = [self._num_doors for _ in range(24)]
-        for v in ventanas:
-            if not 0 <= v <= self._num_doors:
-                print("No puedes abrir menos de 0 ventanas ni más de", self._num_doors, ". Cambio", v, "por", int(max(0, min(v, self._num_doors))), "para continuar.")
-                break
-        self._prop_abierto_horas = [int(max(0, min(v, self._num_doors))) / self._num_doors for v in ventanas]
+        if ventanas:
+            for v in ventanas:
+                if not 0 <= v <= self._num_doors:
+                    print("No puedes abrir menos de 0 ventanas ni más de", self._num_doors, ". Cambio", v, "por", int(max(0, min(v, self._num_doors))), "para continuar.")
+                    break
+            self._prop_abierto_horas = [int(max(0, min(v, self._num_doors))) / self._num_doors for v in ventanas]
+        else:
+            self._prop_abierto_horas = [1 for _ in range(24)]
