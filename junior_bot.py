@@ -1326,14 +1326,14 @@ class HouseBot(Bot):
             self._prop_abierto = 0
             for y in range(len(self._plan)):
                 for x in range(len(self._plan[0]) - 1):
-                    if plan[y][x] in "pPdD":
+                    if self._plan[y][x] in "pPdD":
                         self._prop_abierto += 1
             self._prop_abierto /= self._num_doors
             self._estado_puertas = []
             for y in range(len(self._plan)):
                 for x in range(len(self._plan[0]) - 1):
-                    if plan[y][x] in "pPdDcC":
-                        self._estado_puertas.append(plan[y][x] not in "cC")
+                    if self._plan[y][x] in "pPdDcC":
+                        self._estado_puertas.append(self._plan[y][x] not in "cC")
         else:
             print("Lo siento, no te he entendido.\n\nEjemplos de uso: \"abrir 1 0\" \"cerrar 3 4\".\nPara salir, escribe \"salir\".")
 
