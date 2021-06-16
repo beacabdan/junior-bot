@@ -1354,19 +1354,32 @@ class HouseBot(Bot):
     def estudio_temperatura(self):
         temperatures = []
         temperatures_interior = []
+        temperatures_cerrado = []
         for i in range(48):
             t = i % 24
             temperatures.append(self.get_temperature_outside(t))
+            temperatures_cerrado.append(self.get_temperature_closed(t))
             temperatures_interior.append(self.get_current_temperature(t))
         plt.figure(figsize=(7, 7))
         plt.subplot(2, 1, 1)
-        plt.plot(temperatures, "--")
-        plt.plot(temperatures_interior)
+        plt.plot(temperatures, label="exterior")
+        plt.plot(temperatures_interior, label="interior")
+        # plt.plot(temperatures_cerrado, label="cerrado")
         plt.ylabel("Temperatura (ºC)")
         plt.title("Temperatura a lo largo de dos días")
-        plt.legend({"exterior", "interior"})
+        plt.legend()
         plt.subplot(2, 1, 2)
         plt.plot([elem * 100 for elem in self._prop_abierto_horas] * 2)
         plt.xlabel("Horas")
         plt.ylabel("(%)")
+        plt.ylim([-1, 101])
         plt.title("Apertura de puertas y ventanas")
+
+    def ventanas_abiertas(self, ventanas=None):
+        if not ventanas:
+            ventanas = [self._num_doors for _ in range(24)]
+        for v in ventanas:
+            if not 0 <= v <= self._num_doors:
+                print("No puedes abrir menos de 0 ventanas ni más de", self._num_doors, ". Cambio", v, "por", int(max(0, min(v, self._num_doors))), "para continuar.")
+                break
+        self._prop_abierto_horas = [int(max(0, min(v, self._num_doors))) / self._num_doors for v in ventanas]
