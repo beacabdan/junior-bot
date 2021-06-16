@@ -1280,7 +1280,7 @@ class HouseBot(Bot):
             if self._plan[y][x] in "PpDd":
                 print("(porque ya está abierta).")
             else:
-                print("(contiene " + plan[y][x] + ").")
+                print("(contiene " + self._plan[y][x] + ").")
             return
         self._plan[y][x] = "P"
         door_radius, width, height, case, side = self.tipo_puerta(x, y)
@@ -1294,7 +1294,7 @@ class HouseBot(Bot):
             if self._plan[y][x] in "Cc":
                 print("(porque ya está cerrada).")
             else:
-                print("(contiene " + plan[y][x] + ").")
+                print("(contiene " + self._plan[y][x] + ").")
             return
         self._plan[y][x] = "C"
         door_radius, width, height, case, side = self.tipo_puerta(x, y)
