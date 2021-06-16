@@ -23,6 +23,7 @@ import os
 from google.colab.patches import cv2_imshow
 import cv2
 import random
+from ColabTurtle.Turtle import *
 
 
 # from mxnet import npx
@@ -982,3 +983,341 @@ class AI(Bot):
     #     topk, cos = self.knn(self.glove_6b50d.idx_to_vec, self.glove_6b50d[[query_token]], k + 1)
     #     for i, c in zip(topk[1:], cos[1:]):
     #         print(self.glove_6b50d.idx_to_token[int(i)])
+
+
+class HouseBot(Bot):
+    def __init__(self, width=400, height=300, speed=10):
+        # Initialize the turtle library
+        self._width = width
+        self._height = height
+        self._plan = []
+        initializeTurtle(speed, (int(width), int(height)))
+        bgcolor("white")
+        pencolor("black")
+        print("(DRAWINGBOT) Inicializado.")
+
+    @property
+    def plan():
+        return self._plan
+
+    @staticmethod
+    def dibuixa_linia(longitud):
+        forward(longitud)
+
+    def dibuixa_quadrat(self, tamany, x=-1, y=-1):
+        if x < 0 or y < 0:
+            x = getx()
+            y = gety()
+        self.dibuixa_linia(x - tamany // 2, y - tamany // 2, x - tamany // 2, y + tamany // 2)
+        self.dibuixa_linia(x - tamany // 2, y + tamany // 2, x + tamany // 2, y + tamany // 2)
+        self.dibuixa_linia(x + tamany // 2, y + tamany // 2, x + tamany // 2, y - tamany // 2)
+        self.dibuixa_linia(x + tamany // 2, y - tamany // 2, x - tamany // 2, y - tamany // 2)
+        penup()
+        self.ir_a(x, y)
+        pendown()
+
+    def emplena_quadrat(self, tamany, x=-1, y=-1, color="white"):
+        pencolor(color)
+        if x < 0 or y < 0:
+            x = getx()
+            y = gety()
+        for i in range(int(y - tamany // 2), int(y + tamany // 2) + 1, 2):
+            self.dibuixa_linia(x - tamany // 2, i, x + tamany // 2, i)
+        penup()
+        self.ir_a(x, y)
+        pendown()
+        pencolor("black")
+
+    @staticmethod
+    def dibuixa_rectangle(width, height):
+        setheading(0)
+        forward(width)
+        left(-90)
+        forward(height)
+        left(-90)
+        forward(width)
+        left(-90)
+        forward(height)
+
+    @staticmethod
+    def dibuixa_triangle(tamany):
+        forward(tamany)
+        left(120)
+        forward(tamany)
+        left(120)
+        forward(tamany)
+
+    def home(self):
+        penup()
+        goto(self._width // 2, self._height // 2)
+        setheading(-90)
+        pendown()
+
+    def ir_a(self, x, y):
+        penup()
+        goto(min(max(0, x), self._width), min(max(0, y), self._height))
+        pendown()
+
+    def dibuixa_linia(self, x, y, x2, y2):
+        penup()
+        goto(min(max(0, x), self._width), min(max(0, y), self._height))
+        pendown()
+        goto(min(max(0, x2), self._width), min(max(0, y2), self._height))
+
+    def dibuixa_cercle(self, r, x=-1, y=-1, angle=360, start=0, step=10):
+        if x < 0 or y < 0:
+            x = getx()
+            y = gety()
+        for i in range(0, angle - 1, step):
+            i = (i + start) * math.pi / 180
+            self.dibuixa_linia(x + math.cos(i) * r, y + math.sin(i) * r, x + math.cos(i + step * math.pi / 180) * r, y + math.sin(i + step * math.pi / 180) * r)
+        self.ir_a(x, y)
+
+    def dibuja_plano(self, plan, scale=0.75, filled=False):
+        self._plan = plan
+        hp = len(plan)
+        for i in range(hp - 1):
+            if len(plan[i]) != len(plan[i + 1]):
+                print("(DRAWINGBOT) El plano está mal creado!")
+                return
+        wp = len(plan[0])
+
+        if hp < wp:
+            scaled_width = self._width * scale
+            scaled_height = scaled_width / (wp - 1) * (hp - 1)
+            door_radius = scaled_width / (wp - 1) / 2
+        else:
+            scaled_height = self._height * scale
+            scaled_width = scaled_height / (hp - 1) * (wp - 1)
+            door_radius = scaled_height / (hp - 1) / 2
+
+        delay_w = (self._width - scaled_width) / 2
+        delay_h = (self._height - scaled_height) / 2
+
+        for y in range(hp):
+            height = y * scaled_height / (hp - 1)
+            for x in range(wp - 1):
+                if plan[y][x] != " " and plan[y][x + 1] != " ":
+                    self.dibuixa_linia(x * scaled_width / (wp - 1) + delay_w, height + delay_h, (x + 1) * scaled_width / (wp - 1) + delay_w, height + delay_h)
+        for x in range(wp):
+            width = x * scaled_width / (wp - 1)
+            for y in range(hp - 1):
+                if plan[y][x] != " " and plan[y + 1][x] != " ":
+                    self.dibuixa_linia(width + delay_w, y * scaled_height / (hp - 1) + delay_h, width + delay_w, (y + 1) * scaled_height / (hp - 1) + delay_h)
+
+        case = "up"
+        side = "r"
+        for y in range(hp):
+            start = -1
+            for x in range(wp):
+                height = y * scaled_height / (hp - 1) + delay_h
+                width = x * scaled_width / (wp - 1) + delay_w
+                if plan[y][x] == "#":
+                    if not filled:
+                        continue
+                    self.emplena_quadrat(door_radius * 2, x=width, y=height, color="black")
+                elif plan[y][x] in "pPdDcC":
+                    if y == 0:
+                        case = "up"
+                    elif y == hp - 1:
+                        case = "down"
+                    elif x == 0:
+                        case = "left"
+                    elif x == wp - 1:
+                        case = "right"
+                    else:
+                        if plan[y][x - 1] != " " and plan[y][x + 1] != " ":
+                            if plan[y - 1][x] == " ":
+                                case = "up"
+                            elif plan[y + 1][x] == " ":
+                                case = "down"
+                        elif plan[y - 1][x] != " " and plan[y + 1][x] != " ":
+                            if plan[y][x - 1] == " ":
+                                case = "left"
+                            else:
+                                case = "right"
+                    if case in ["left", "right"]:
+                        try:
+                            side = "r" if plan[y - 1][x] in "pPdDcC" else "l"
+                        except:
+                            side = "l" if plan[y + 1][x] in "pPdDcC" else "r"
+                    else:
+                        try:
+                            side = "r" if plan[y][x + 1] in "pPdDcC" else "l"
+                        except:
+                            side = "l" if plan[y][x - 1] in "pPdDcC" else "r"
+
+                    self.dibuja_puerta(door_radius, width, height, case=case, side=side, open=plan[y][x] not in "cC")
+
+    def dibuja_puerta(self, door_radius, width, height, case="up", side="r", open=True):
+        x_delay = 0
+        y_delay = 0
+        x2_delay = 0
+        y2_delay = 0
+        a_delay = 0
+        if case == "down":
+            if side == "r":
+                x_delay = x2_delay = -door_radius
+                y2_delay = door_radius * 2
+            else:
+                x_delay = x2_delay = door_radius
+                a_delay = 90
+                y2_delay = door_radius * 2
+        elif case == "left":
+            if side == "l":
+                y_delay = y2_delay = -door_radius
+                a_delay = 90
+                x2_delay = -door_radius * 2
+            else:
+                y_delay = y2_delay = door_radius
+                a_delay = 180
+                x2_delay = -door_radius * 2
+        elif case == "right":
+            if side == "r":
+                y_delay = y2_delay = door_radius
+                a_delay = 270
+                x2_delay = door_radius * 2
+            else:
+                y_delay = y2_delay = -door_radius
+                x2_delay = door_radius * 2
+        else:
+            if side == "r":
+                x_delay = x2_delay = -door_radius
+                a_delay = 270
+                y2_delay = -door_radius * 2
+            else:
+                x_delay = x2_delay = door_radius
+                a_delay = 180
+                y2_delay = -door_radius * 2
+
+        self.dibuixa_cercle(door_radius * 2, start=a_delay, angle=90, x=width + x_delay, y=height + y_delay)
+        goto(min(max(0, width + x2_delay), self._width), min(max(0, height + y2_delay), self._height))
+
+    def abre_puertas_random(self, max_changes=20, scale=0.75):
+        hp = len(self._plan)
+        wp = len(self._plan[0])
+        if hp < wp:
+            scaled_width = self._width * scale
+            scaled_height = scaled_width / (wp - 1) * (hp - 1)
+            door_radius = scaled_width / (wp - 1) / 2
+        else:
+            scaled_height = self._height * scale
+            scaled_width = scaled_height / (hp - 1) * (wp - 1)
+            door_radius = scaled_height / (hp - 1) / 2
+        delay_w = (self._width - scaled_width) / 2
+        delay_h = (self._height - scaled_height) / 2
+
+        changes = 0
+        while True:
+            for y in range(hp):
+                for x in range(wp):
+                    door_radius, width, height, case, side = self.tipo_puerta(x, y)
+                    if random.random() < 0.4:
+                        if self._plan[y][x] in "pPdD":
+                            self.cierra_puerta(x, y)
+                            changes += 1
+                        elif self._plan[y][x] in "cC":
+                            self.abre_puerta(x, y)
+                            changes += 1
+
+                        if changes >= max_changes:
+                            return
+
+    def tipo_puerta(self, x, y, scale=0.75):
+        hp = len(self._plan)
+        wp = len(self._plan[0])
+        if hp < wp:
+            scaled_width = self._width * scale
+            scaled_height = scaled_width / (wp - 1) * (hp - 1)
+            door_radius = scaled_width / (wp - 1) / 2
+        else:
+            scaled_height = self._height * scale
+            scaled_width = scaled_height / (hp - 1) * (wp - 1)
+            door_radius = scaled_height / (hp - 1) / 2
+        delay_w = (self._width - scaled_width) / 2
+        delay_h = (self._height - scaled_height) / 2
+        height = y * scaled_height / (hp - 1) + delay_h
+        width = x * scaled_width / (wp - 1) + delay_w
+
+        case = "up"
+        if y == 0:
+            case = "up"
+        elif y == hp - 1:
+            case = "down"
+        elif x == 0:
+            case = "left"
+        elif x == wp - 1:
+            case = "right"
+        else:
+            if self._plan[y][x - 1] != " " and self._plan[y][x + 1] != " ":
+                if self._plan[y - 1][x] == " ":
+                    case = "up"
+                elif self._plan[y + 1][x] == " ":
+                    case = "down"
+            elif self._plan[y - 1][x] != " " and self._plan[y + 1][x] != " ":
+                if self._plan[y][x - 1] == " ":
+                    case = "left"
+                else:
+                    case = "right"
+
+        if case in ["left", "right"]:
+            try:
+                side = "r" if self._plan[y - 1][x] in "pPdDcC" else "l"
+            except:
+                side = "l" if self._plan[y + 1][x] in "pPdDcC" else "r"
+        else:
+            try:
+                side = "r" if self._plan[y][x + 1] in "pPdDcC" else "l"
+            except:
+                side = "l" if self._plan[y][x - 1] in "pPdDcC" else "r"
+        return door_radius, width, height, case, side
+
+    def abre_puerta(self, x, y, no=-1, scale=0.75):
+        self._plan[y] = list(self._plan[y])
+        if self._plan[y][x] not in "Cc":
+            print("Imposible abrir la puerta en", x, y, end=" ")
+            if self._plan[y][x] in "PpDd":
+                print("(porque ya está abierta).")
+            else:
+                print("(contiene " + plan[y][x] + ").")
+            return
+        self._plan[y][x] = "P"
+        door_radius, width, height, case, side = self.tipo_puerta(x, y)
+        self.dibuja_puerta(door_radius, width, height, case=case, side=side, open=True)
+        # print("Opened door at", x, y)
+
+    def cierra_puerta(self, x, y, no=-1):
+        self._plan[y] = list(self._plan[y])
+        if self._plan[y][x] not in "PpDd":
+            print("Imposible cerrar la puerta en", x, y, end=" ")
+            if self._plan[y][x] in "Cc":
+                print("(porque ya está cerrada).")
+            else:
+                print("(contiene " + plan[y][x] + ").")
+            return
+        self._plan[y][x] = "C"
+        door_radius, width, height, case, side = self.tipo_puerta(x, y)
+        delayx = 0 if case in ["up", "down"] else (-door_radius if case[0] == "l" else door_radius)
+        delayy = 0 if case in ["right", "left"] else (-door_radius if case[0] == "u" else door_radius)
+        self.emplena_quadrat(door_radius * 2.3, x=width + delayx, y=height + delayy, color="white")
+        self.dibuixa_linia(width + delayx - (door_radius if case in ["up", "down"] else 0) + (door_radius if case == "left" else 0) - (door_radius if case == "right" else 0),
+                           height + delayy + (door_radius if case == "up" else 0) - (door_radius if case == "down" else 0) - (door_radius if case == "left" else 0) - (door_radius if case == "right" else 0),
+                           width + delayx - (door_radius if case in ["up", "down"] else 0) + (2 * door_radius if case in ["up", "down"] else 0) + (door_radius if case == "left" else 0) - (door_radius if case == "right" else 0),
+                           height + delayy + (door_radius if case == "up" else 0) - (door_radius if case == "down" else 0) + (door_radius if case == "left" else 0) + (door_radius if case == "right" else 0))
+        # print("Closed door at", x, y)
+
+    def dar_orden(self, user):
+        try:
+            orden, x, y = user.split(" ")
+            x = int(x)
+            y = int(y)
+        except:
+            print("Por favor, usa sólo números enteros (sin decimales).")
+            orden = "error"
+
+        if orden.lower() == "cerrar":
+            self.cierra_puerta(x, y)
+        elif orden.lower() == "abrir":
+            self.abre_puerta(x, y)
+        else:
+            print("Lo siento, no te he entendido.\n\nEjemplos de uso: \"abrir 1 0\" \"cerrar 3 4\".\nPara salir, escribe \"salir\".")
