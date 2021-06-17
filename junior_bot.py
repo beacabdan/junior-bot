@@ -786,6 +786,40 @@ class AI(Bot):
             self._db = DriveBot(file)
         print("(AI) Inicializada.")
 
+    # vvvv para housebot vvvvv
+
+    @staticmethod
+    def minimise_temp_random(drb, tests=50, log=False):
+        plan = drb.plan
+        if not plan:
+            print("(AI) No has cargado ningún plano en HouseBot. Usa load_plano(plano) o dibuja_plano(plano) para cargar un plano.")
+            return -1
+        doors = []
+        for y in range(len(plan)):
+            for x in range(len(plan[0])):
+                if plan[y][x] in "pPcCdD":
+                    doors.append([x, y])
+
+        while tests > 0:
+            tests -= 1
+            prev_temp = drb.get_current_temperature()
+            puerta = random.choice(doors)
+            action = random.choice(["abrir", "cerrar"])
+            orden = action + " " + str(puerta[0]) + " " + str(puerta[1])
+            if log: print("\n\n(AI) He dado la orden: " + orden)
+            drb.dar_orden(orden, log)
+            post_temp = drb.get_current_temperature()
+            if log: print("(AI) La temperatura en el interior es ahora de " + str(post_temp) + "ºC ", end="")
+            if post_temp > prev_temp:
+                action = "cerrar" if action == "abrir" else "abrir"
+                orden = action + " " + str(puerta[0]) + " " + str(puerta[1])
+                if log: print("\n(AI) Revierto el proceso: " + orden)
+                drb.dar_orden(orden, log)
+                if log: print("(AI) La temperatura en el interior es de " + str(drb.get_current_temperature()) + "ºC")
+            else:
+                if log: print("(ha bajado " + str(round(prev_temp - post_temp, 1)) + "ºC).")
+        return post_temp
+
     # vvv chatbot vvvvvvv
 
     def dame_info_frase(self, frase):
@@ -990,15 +1024,16 @@ class HouseBot(Bot):
         # Initialize the turtle library
         self._width = width
         self._height = height
-        self._plan = []
+        self._plan = None
         self._prop_abierto = 1
         self._num_doors = 0
         self._estado_puertas = []
         self._prop_abierto_horas = [1 for _ in range(24)]
+        self._drawing = False
         print("(DRAWINGBOT) Inicializado.")
 
     @property
-    def plan():
+    def plan(self):
         return self._plan
 
     @staticmethod
@@ -1078,8 +1113,8 @@ class HouseBot(Bot):
         hp = len(plan)
         for i in range(hp - 1):
             if len(plan[i]) != len(plan[i + 1]):
-                print("(DRAWINGBOT) El plano está mal creado!")
-                return
+                print("(HOUSEBOT) El plano está mal creado!")
+                return -1
         wp = len(plan[0])
         self._plan = plan
         self._estado_puertas = []
@@ -1095,21 +1130,26 @@ class HouseBot(Bot):
                     self._prop_abierto += 1
                 if plan[y][x] in "pPdDcC":
                     self._num_doors += 1
-
         self._prop_abierto /= self._num_doors
+        return 1
 
-    def dibuja_plano(self, plan, scale=0.75, filled=False, speed=10):
+    def dibuja_plano(self, plan=None, scale=0.75, filled=False, speed=10, once=False):
+        if not plan:
+            plan = self._plan
+        if not plan:
+            print("(HOUSEBOT) ¡No hay plano! Usa dibuja_plano(plano) o load_plano(plano).")
+            return
+
         initializeTurtle(speed, (int(self._width), int(self._height)))
         bgcolor("white")
         pencolor("black")
         hideturtle()
+        self._drawing = True
 
-        self.load_plano(plan)
+        if self.load_plano(plan) < 0:
+            print("(HOUSEBOT) No he podido dibujar el plano.")
+            return
         hp = len(plan)
-        for i in range(hp - 1):
-            if len(plan[i]) != len(plan[i + 1]):
-                print("(DRAWINGBOT) El plano está mal creado!")
-                return
         wp = len(plan[0])
 
         if hp < wp:
@@ -1148,9 +1188,11 @@ class HouseBot(Bot):
                     self.emplena_quadrat(door_radius * 2, x=width, y=height, color="black")
                 elif plan[y][x] in "pPdDcC":
                     if plan[y][x] not in "cC":
-                        self.abre_puerta(x, y, first=True)
+                        self.abre_puerta(x, y, first=True, log=False)
                     else:
-                        self.cierra_puerta(x, y, first=True)
+                        self.cierra_puerta(x, y, first=True, log=False)
+        if once:
+            self._drawing = False
 
     def dibuja_puerta(self, door_radius, width, height, case="up", side="r", open=True):
         x_delay = 0
@@ -1275,34 +1317,39 @@ class HouseBot(Bot):
                 side = "l" if self._plan[y][x - 1] in "pPdDcC" else "r"
         return door_radius, width, height, case, side
 
-    def abre_puerta(self, x, y, no=-1, first=False):
+    def abre_puerta(self, x, y, no=-1, first=False, log=True):
         self._plan[y] = list(self._plan[y])
         if self._plan[y][x] not in "Cc" and not first:
-            print("Imposible abrir la puerta en", x, y, end=" ")
+            if log: print("(HOUSEBOT) Imposible abrir la puerta en", x, y, end=" ")
             if self._plan[y][x] in "PpDd":
-                print("(porque ya está abierta).")
+                if log: print("(porque ya está abierta).")
             else:
-                print("(contiene " + self._plan[y][x] + ").")
+                if log: print("(contiene " + self._plan[y][x] + ").")
             return -1
         self._plan[y][x] = "P"
+        if not self._drawing:
+            return 1
         door_radius, width, height, case, side = self.tipo_puerta(x, y)
         self.dibuja_puerta(door_radius, width, height, case=case, side=side, open=True)
         # print("Opened door at", x, y)
         return 1
 
-    def cierra_puerta(self, x, y, no=-1, first=False):
+    def cierra_puerta(self, x, y, no=-1, first=False, log=True):
         self._plan[y] = list(self._plan[y])
         if self._plan[y][x] not in "PpDd" and not first:
-            print("Imposible cerrar la puerta en", x, y, end=" ")
+            if log: print("(HOUSEBOT) Imposible cerrar la puerta en", x, y, end=" ")
             if self._plan[y][x] in "Cc":
-                print("(porque ya está cerrada).")
+                if log: print("(porque ya está cerrada).")
             else:
-                print("(contiene " + self._plan[y][x] + ").")
+                if log: print("(contiene " + self._plan[y][x] + ").")
             return -1
         self._plan[y][x] = "C"
+        if not self._drawing:
+            return 1
         door_radius, width, height, case, side = self.tipo_puerta(x, y)
         delayx = 0 if case in ["up", "down"] else (-door_radius if case[0] == "l" else door_radius)
         delayy = 0 if case in ["right", "left"] else (-door_radius if case[0] == "u" else door_radius)
+
         self.emplena_quadrat(door_radius * 2.3, x=width + delayx, y=height + delayy, color="white")
         self.dibuixa_linia(width + delayx - (door_radius if case in ["up", "down"] else 0) + (door_radius if case == "left" else 0) - (door_radius if case == "right" else 0),
                            height + delayy + (door_radius if case == "up" else 0) - (door_radius if case == "down" else 0) - (door_radius if case == "left" else 0) - (door_radius if case == "right" else 0),
@@ -1311,20 +1358,20 @@ class HouseBot(Bot):
         # print("Closed door at", x, y)
         return 1
 
-    def dar_orden(self, user):
+    def dar_orden(self, user, log=True):
         try:
             orden, x, y = user.split(" ")
             x = int(x)
             y = int(y)
         except:
-            print("Por favor, usa sólo números enteros (sin decimales).")
+            print("(HOUSEBOT) Por favor, usa sólo números enteros (sin decimales).")
             orden = "error"
         code = -1
         if orden == "cerrar" or orden == "abrir":
             if orden == "cerrar":
-                code = self.cierra_puerta(x, y)
+                code = self.cierra_puerta(x, y, log=log)
             else:
-                code = self.abre_puerta(x, y)
+                code = self.abre_puerta(x, y, log=log)
             self._prop_abierto = 0
             for y in range(len(self._plan)):
                 for x in range(len(self._plan[0]) - 1):
@@ -1337,10 +1384,8 @@ class HouseBot(Bot):
                     if self._plan[y][x] in "pPdDcC":
                         self._estado_puertas.append(self._plan[y][x] not in "cC")
         else:
-            print("Lo siento, no te he entendido.\n\nEjemplos de uso: \"abrir 1 0\" \"cerrar 3 4\".\nPara salir, escribe \"salir\".")
+            print("(HOUSEBOT) Lo siento, no te he entendido.\n\nEjemplos de uso: \"abrir 1 0\" \"cerrar 3 4\".\nPara salir, escribe \"salir\".")
         return code
-
-    """ vvvvvv CODIGO NUEVO vvvvvvvv """
 
     @staticmethod
     def get_temperature_outside(t):
@@ -1348,11 +1393,14 @@ class HouseBot(Bot):
 
     @staticmethod
     def get_temperature_closed(t):
-        return round(math.sin(t / 24 * math.pi * 2 - 3 * math.pi / 4) * 1.5 + 22.5, 2)
+        return math.sin(t / 24 * math.pi * 2 - 3 * math.pi / 4) * 1.5 + 22.5
 
-    def get_current_temperature(self, t):
+    def get_current_temperature(self, t=-1):
         prop = self._prop_abierto_horas[t]
-        return prop * self.get_temperature_outside(t) + (1 - prop) * self.get_temperature_closed(t)
+        if t < 0:
+            prop = self._prop_abierto
+            t = datetime.now().hour
+        return round(prop * self.get_temperature_outside(t) + (1 - prop) * self.get_temperature_closed(t), 1)
 
     def estudio_temperatura(self):
         temperatures = []
@@ -1382,7 +1430,7 @@ class HouseBot(Bot):
         if ventanas:
             for v in ventanas:
                 if not 0 <= v <= self._num_doors:
-                    print("No puedes abrir menos de 0 ventanas ni más de", self._num_doors, ". Cambio", v, "por", int(max(0, min(v, self._num_doors))), "para continuar.")
+                    print("(HOUSEBOT) No puedes abrir menos de 0 ventanas ni más de", self._num_doors, ". Cambio", v, "por", int(max(0, min(v, self._num_doors))), "para continuar.")
                     break
             self._prop_abierto_horas = [int(max(0, min(v, self._num_doors))) / self._num_doors for v in ventanas]
         else:
