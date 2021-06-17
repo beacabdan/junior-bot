@@ -1327,7 +1327,7 @@ class HouseBot(Bot):
                 if log: print("(contiene " + self._plan[y][x] + ").")
             return -1
         self._plan[y][x] = "P"
-        if not self._drawing or not log and not self._drawing:
+        if not self._drawing or not log and not first:
             return 1
         door_radius, width, height, case, side = self.tipo_puerta(x, y)
         self.dibuja_puerta(door_radius, width, height, case=case, side=side, open=True)
@@ -1344,7 +1344,7 @@ class HouseBot(Bot):
                 if log: print("(contiene " + self._plan[y][x] + ").")
             return -1
         self._plan[y][x] = "C"
-        if not self._drawing or not log and not self._drawing:
+        if not self._drawing or not log and not first:
             return 1
         door_radius, width, height, case, side = self.tipo_puerta(x, y)
         delayx = 0 if case in ["up", "down"] else (-door_radius if case[0] == "l" else door_radius)
