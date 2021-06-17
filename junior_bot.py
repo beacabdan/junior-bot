@@ -798,13 +798,14 @@ class AI(Bot):
         for y in range(len(plan)):
             for x in range(len(plan[0])):
                 if plan[y][x] in "pPcCdD":
-                    doors.append([x, y])
+                    doors.append([x, y, 1 if plan[y][x] in "pPdD" else 0])
 
+        actions = ["abrir", "cerrar"]
         while tests > 0:
             tests -= 1
             prev_temp = drb.get_current_temperature()
             puerta = random.choice(doors)
-            action = random.choice(["abrir", "cerrar"])
+            action = actions[puerta[2]]
             orden = action + " " + str(puerta[0]) + " " + str(puerta[1])
             if log: print("\n\n(AI) He dado la orden: " + orden)
             drb.dar_orden(orden, log)
