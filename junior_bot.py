@@ -1327,11 +1327,11 @@ class HouseBot(Bot):
                 if log: print("(contiene " + self._plan[y][x] + ").")
             return -1
         self._plan[y][x] = "P"
-        if not self._drawing:
+        if not self._drawing or not log:
             return 1
         door_radius, width, height, case, side = self.tipo_puerta(x, y)
         self.dibuja_puerta(door_radius, width, height, case=case, side=side, open=True)
-        # print("Opened door at", x, y)
+        # print("Drawn open door at", x, y)
         return 1
 
     def cierra_puerta(self, x, y, no=-1, first=False, log=True):
@@ -1344,7 +1344,7 @@ class HouseBot(Bot):
                 if log: print("(contiene " + self._plan[y][x] + ").")
             return -1
         self._plan[y][x] = "C"
-        if not self._drawing:
+        if not self._drawing or not log:
             return 1
         door_radius, width, height, case, side = self.tipo_puerta(x, y)
         delayx = 0 if case in ["up", "down"] else (-door_radius if case[0] == "l" else door_radius)
@@ -1355,7 +1355,7 @@ class HouseBot(Bot):
                            height + delayy + (door_radius if case == "up" else 0) - (door_radius if case == "down" else 0) - (door_radius if case == "left" else 0) - (door_radius if case == "right" else 0),
                            width + delayx - (door_radius if case in ["up", "down"] else 0) + (2 * door_radius if case in ["up", "down"] else 0) + (door_radius if case == "left" else 0) - (door_radius if case == "right" else 0),
                            height + delayy + (door_radius if case == "up" else 0) - (door_radius if case == "down" else 0) + (door_radius if case == "left" else 0) + (door_radius if case == "right" else 0))
-        # print("Closed door at", x, y)
+        # print("Drawn close door at", x, y)
         return 1
 
     def dar_orden(self, user, log=True):
