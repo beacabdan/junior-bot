@@ -804,11 +804,13 @@ class AI(Bot):
         while tests > 0:
             tests -= 1
             prev_temp = drb.get_current_temperature()
-            puerta = random.choice(doors)
+            puerta_id = random.randint(0, len(doors)-1)
+            puerta = doors[puerta_id]
             action = actions[puerta[2]]
             orden = action + " " + str(puerta[0]) + " " + str(puerta[1])
             if log: print("\n\n(AI) He dado la orden: " + orden)
             drb.dar_orden(orden, log)
+            doors[puerta_id][2] = 1 if doors[puerta_id][2] == 0 else 0
             post_temp = drb.get_current_temperature()
             if log: print("(AI) La temperatura en el interior es ahora de " + str(post_temp) + "ºC ", end="")
             if post_temp > prev_temp:
@@ -816,6 +818,7 @@ class AI(Bot):
                 orden = action + " " + str(puerta[0]) + " " + str(puerta[1])
                 if log: print("\n(AI) Revierto el proceso: " + orden)
                 drb.dar_orden(orden, log)
+                doors[puerta_id][2] = 1 if doors[puerta_id][2] == 0 else 0
                 if log: print("(AI) La temperatura en el interior es de " + str(drb.get_current_temperature()) + "ºC")
             else:
                 if log: print("(ha bajado " + str(round(prev_temp - post_temp, 1)) + "ºC).")
