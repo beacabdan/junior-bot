@@ -1384,7 +1384,7 @@ class HouseBot(Bot):
                     if self._plan[y][x] in "pPdDcC":
                         self._estado_puertas.append(self._plan[y][x] not in "cC")
         else:
-            print("(HOUSEBOT) Lo siento, no te he entendido.\n\nEjemplos de uso: \"abrir 1 0\" \"cerrar 3 4\".\nPara salir, escribe \"salir\".")
+            print("(HOUSEBOT) Lo siento, no te he entendido.\n\nEjemplos de uso: \"abrir 1 0\" \"cerrar 3 4\".")
         return code
 
     @staticmethod
