@@ -23,7 +23,7 @@ from google.colab.patches import cv2_imshow
 import cv2
 import random
 from ColabTurtle.Turtle import *
-from datetime import *
+# from datetime import *
 
 
 # from mxnet import npx
