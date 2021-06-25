@@ -339,7 +339,7 @@ class TwitterBot(Bot):
                 pass
         print("(TWEETBOT)", counter, "retweets.")
 
-    def analiza_timeline(self, propiedades, num=10):
+    def analiza_timeline(self, propiedades=["id", "texto"], num=10):
         tuits = self.timeline(num)
         print("(TWITTERBOT) Analizando timeline:", end=" ")
         return self.analiza_estados(tuits, propiedades)
@@ -667,6 +667,12 @@ class TwitterBot(Bot):
                 tests -= 1
         print("No se ha hecho ningún retweet.")
         return None
+
+    def like_status(self, id):
+        try:
+            self.api.create_favorite(id)
+        except:
+            print("Could not like the status with id:", id)
 
 
 class DriveBot(Bot):
