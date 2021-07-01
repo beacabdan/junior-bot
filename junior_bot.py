@@ -737,13 +737,16 @@ class DriveBot(Bot):
 
     def read_worksheet(self, title):
         sheet = []
-        worksheet = self.document.worksheet(title)
-        rows = len(worksheet.col_values(1))
-        for r in range(2, rows + 1):
-            row = worksheet.row_values(r)
-            sheet.append({"frase": row[0], "tags": row[1].split(", "), "idioma": row[2].split(", "), "imagen": row[3]})
-        self._openSheet = title
-        self._sheet = sheet
+        try:
+            worksheet = self.document.worksheet(title)
+            rows = len(worksheet.col_values(1))
+            for r in range(2, rows + 1):
+                row = worksheet.row_values(r)
+                sheet.append({"frase": row[0], "tags": row[1].split(", "), "idioma": row[2].split(", "), "imagen": row[3]})
+            self._openSheet = title
+            self._sheet = sheet
+        except:
+            pass
         return sheet + [{'frase': 'Hola', 'tags': ['saludo'], 'idioma': ['ES', 'CA'], 'imagen': 'idle'}, {'frase': 'Ei', 'tags': ['saludo'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Hey', 'tags': ['saludo'], 'idioma': ['EN'], 'imagen': 'idle'}, {'frase': 'Hello', 'tags': ['saludo'], 'idioma': ['EN'], 'imagen': 'idle'}, {'frase': 'Buenos días', 'tags': ['saludo', 'mañana'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Bon dia', 'tags': ['saludo', 'mañana'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Bona tarda', 'tags': ['saludo', 'tarde'], 'idioma': ['CA'], 'imagen': 'idle'},
                         {'frase': 'Ciao', 'tags': ['saludo', 'despedida'], 'idioma': ['ES', 'CA', 'EN'], 'imagen': 'feliz'}, {'frase': 'Adiós', 'tags': ['despedida'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Adeu', 'tags': ['despedida'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Déu', 'tags': ['despedida'], 'idioma': ['ES', 'CA'], 'imagen': 'idle'}, {'frase': 'Adeu-siau', 'tags': ['despedida'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Déu-vos-guard', 'tags': ['despedida'], 'idioma': ['CA'], 'imagen': 'idle'},
                         {'frase': 'Muy bien, ¿qué tal tú?', 'tags': ['respuesta', 'pregunta', 'estado'], 'idioma': ['ES'], 'imagen': 'feliz'}, {'frase': '¡Bien! ¿Tú?', 'tags': ['respuesta', 'pregunta', 'estado'], 'idioma': ['ES'], 'imagen': 'feliz'}, {'frase': '¡Muy bien!', 'tags': ['respuesta', 'estado', 'positivo'], 'idioma': ['ES'], 'imagen': 'feliz'}, {'frase': 'Muy bien, ¿qué tal tú?', 'tags': ['respuesta', 'pregunta', 'estado'], 'idioma': ['ES'], 'imagen': 'feliz'}, {'frase': 'Bien, ¿tú?', 'tags': ['respuesta', 'pregunta', 'estado'], 'idioma': ['ES'], 'imagen': 'feliz'},
