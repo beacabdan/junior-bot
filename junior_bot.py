@@ -1433,7 +1433,7 @@ class HouseBot(Bot):
         prop = self._prop_abierto_horas[t]
         if t < 0:
             prop = self._prop_abierto
-            t = datetime.now().hour
+            t = datetime.datetime.now().hour
         return round(prop * self.get_temperature_outside(t) + (1 - prop) * self.get_temperature_closed(t), 1)
 
     def estudio_temperatura(self):
