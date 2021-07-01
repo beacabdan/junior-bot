@@ -680,13 +680,14 @@ class DriveBot(Bot):
         super().__init__()
         self._description = "I'm a bot that can be used to read and write Drive files!"
 
-        auth.authenticate_user()
-        gauth = GoogleAuth()
-        gauth.credentials = GoogleCredentials.get_application_default()
-        self.gc = gspread.authorize(gauth.credentials)
-        self.drive = GoogleDrive(gauth)
+        if file != "":
+            auth.authenticate_user()
+            gauth = GoogleAuth()
+            gauth.credentials = GoogleCredentials.get_application_default()
+            self.gc = gspread.authorize(gauth.credentials)
+            self.drive = GoogleDrive(gauth)
 
-        self._sheet = None
+        self._sheet = [None]
         self._openSheet = None
         self._document = None
 
@@ -799,6 +800,14 @@ class AI(Bot):
         self.glove_6b50d = None
         self._db = None
 
+        self._basic_sentences = [{'frase': 'Hola', 'tags': ['saludo'], 'idioma': ['ES', 'CA'], 'imagen': 'idle'}, {'frase': 'Ei', 'tags': ['saludo'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Hey', 'tags': ['saludo'], 'idioma': ['EN'], 'imagen': 'idle'}, {'frase': 'Hello', 'tags': ['saludo'], 'idioma': ['EN'], 'imagen': 'idle'}, {'frase': 'Buenos días', 'tags': ['saludo', 'mañana'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Bon dia', 'tags': ['saludo', 'mañana'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Bona tarda', 'tags': ['saludo', 'tarde'], 'idioma': ['CA'], 'imagen': 'idle'},
+                           {'frase': 'Ciao', 'tags': ['saludo', 'despedida'], 'idioma': ['ES', 'CA', 'EN'], 'imagen': 'feliz'}, {'frase': 'Adiós', 'tags': ['despedida'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Adeu', 'tags': ['despedida'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Déu', 'tags': ['despedida'], 'idioma': ['ES', 'CA'], 'imagen': 'idle'}, {'frase': 'Adeu-siau', 'tags': ['despedida'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Déu-vos-guard', 'tags': ['despedida'], 'idioma': ['CA'], 'imagen': 'idle'},
+                           {'frase': 'Muy bien, ¿qué tal tú?', 'tags': ['respuesta', 'pregunta', 'estado'], 'idioma': ['ES'], 'imagen': 'feliz'}, {'frase': '¡Bien! ¿Tú?', 'tags': ['respuesta', 'pregunta', 'estado'], 'idioma': ['ES'], 'imagen': 'feliz'}, {'frase': '¡Muy bien!', 'tags': ['respuesta', 'estado', 'positivo'], 'idioma': ['ES'], 'imagen': 'feliz'}, {'frase': 'Muy bien, ¿qué tal tú?', 'tags': ['respuesta', 'pregunta', 'estado'], 'idioma': ['ES'], 'imagen': 'feliz'}, {'frase': 'Bien, ¿tú?', 'tags': ['respuesta', 'pregunta', 'estado'], 'idioma': ['ES'], 'imagen': 'feliz'},
+                           {'frase': '¿Qué tal?', 'tags': ['pregunta', 'estado'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Com va?', 'tags': ['pregunta', 'estado'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Bé, què tal tu?', 'tags': ['pregunta', 'estado'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Molt bé!', 'tags': ['respuesta', 'estado'], 'idioma': ['CA'], 'imagen': 'feliz'}, {'frase': '¿Qué temperatura hace ahora?', 'tags': ['pregunta', 'temperatura'], 'idioma': ['ES'], 'imagen': 'idle'},
+                           {'frase': 'Ahora mismo estamos a #### grados.', 'tags': ['respuesta', 'temperatura'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': '¡Qué calor!', 'tags': ['pregunta', 'temperatura'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': '¡Sube la persiana!', 'tags': ['orden', 'persiana'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Vale.', 'tags': ['positivo'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': '¡Genial!', 'tags': ['respuesta', 'estado'], 'idioma': ['ES'], 'imagen': 'feliz'},
+                           {'frase': 'Bien.', 'tags': ['respuesta', 'estado'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Sí, ¡qué temperatura!', 'tags': ['temperatura'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Molt bé!', 'tags': ['positivo'], 'idioma': ['CA'], 'imagen': 'feliz'}, {'frase': '¡Genial!', 'tags': ['positivo'], 'idioma': ['ES'], 'imagen': 'feliz'}, {'frase': 'Bien.', 'tags': ['positivo'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Bé!', 'tags': ['positivo'], 'idioma': ['CA'], 'imagen': 'idle'},
+                           {'frase': 'OK', 'tags': ['positivo'], 'idioma': ['ES', 'CA', 'EN'], 'imagen': 'feliz'}, {'frase': 'Pos OK.', 'tags': ['respuesta', 'estado'], 'idioma': ['ES', 'CA'], 'imagen': 'idle'}, {'frase': 'Pos OK.', 'tags': ['positivo'], 'idioma': ['ES', 'CA'], 'imagen': 'idle'}]
+
         super().__init__()
         self._db = DriveBot("")
         print("(AI) Inicializada.")
@@ -846,17 +855,10 @@ class AI(Bot):
     def dame_info_frase(self, frase):
         if "Sheet1" != self._db._openSheet:
             self._db.read_worksheet("Sheet1")
-        basic_sentences = [{'frase': 'Hola', 'tags': ['saludo'], 'idioma': ['ES', 'CA'], 'imagen': 'idle'}, {'frase': 'Ei', 'tags': ['saludo'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Hey', 'tags': ['saludo'], 'idioma': ['EN'], 'imagen': 'idle'}, {'frase': 'Hello', 'tags': ['saludo'], 'idioma': ['EN'], 'imagen': 'idle'}, {'frase': 'Buenos días', 'tags': ['saludo', 'mañana'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Bon dia', 'tags': ['saludo', 'mañana'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Bona tarda', 'tags': ['saludo', 'tarde'], 'idioma': ['CA'], 'imagen': 'idle'},
-                    {'frase': 'Ciao', 'tags': ['saludo', 'despedida'], 'idioma': ['ES', 'CA', 'EN'], 'imagen': 'feliz'}, {'frase': 'Adiós', 'tags': ['despedida'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Adeu', 'tags': ['despedida'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Déu', 'tags': ['despedida'], 'idioma': ['ES', 'CA'], 'imagen': 'idle'}, {'frase': 'Adeu-siau', 'tags': ['despedida'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Déu-vos-guard', 'tags': ['despedida'], 'idioma': ['CA'], 'imagen': 'idle'},
-                    {'frase': 'Muy bien, ¿qué tal tú?', 'tags': ['respuesta', 'pregunta', 'estado'], 'idioma': ['ES'], 'imagen': 'feliz'}, {'frase': '¡Bien! ¿Tú?', 'tags': ['respuesta', 'pregunta', 'estado'], 'idioma': ['ES'], 'imagen': 'feliz'}, {'frase': '¡Muy bien!', 'tags': ['respuesta', 'estado', 'positivo'], 'idioma': ['ES'], 'imagen': 'feliz'}, {'frase': 'Muy bien, ¿qué tal tú?', 'tags': ['respuesta', 'pregunta', 'estado'], 'idioma': ['ES'], 'imagen': 'feliz'}, {'frase': 'Bien, ¿tú?', 'tags': ['respuesta', 'pregunta', 'estado'], 'idioma': ['ES'], 'imagen': 'feliz'},
-                    {'frase': '¿Qué tal?', 'tags': ['pregunta', 'estado'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Com va?', 'tags': ['pregunta', 'estado'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Bé, què tal tu?', 'tags': ['pregunta', 'estado'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Molt bé!', 'tags': ['respuesta', 'estado'], 'idioma': ['CA'], 'imagen': 'feliz'}, {'frase': '¿Qué temperatura hace ahora?', 'tags': ['pregunta', 'temperatura'], 'idioma': ['ES'], 'imagen': 'idle'},
-                    {'frase': 'Ahora mismo estamos a #### grados.', 'tags': ['respuesta', 'temperatura'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': '¡Qué calor!', 'tags': ['pregunta', 'temperatura'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': '¡Sube la persiana!', 'tags': ['orden', 'persiana'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Vale.', 'tags': ['positivo'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': '¡Genial!', 'tags': ['respuesta', 'estado'], 'idioma': ['ES'], 'imagen': 'feliz'},
-                    {'frase': 'Bien.', 'tags': ['respuesta', 'estado'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Sí, ¡qué temperatura!', 'tags': ['temperatura'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Molt bé!', 'tags': ['positivo'], 'idioma': ['CA'], 'imagen': 'feliz'}, {'frase': '¡Genial!', 'tags': ['positivo'], 'idioma': ['ES'], 'imagen': 'feliz'}, {'frase': 'Bien.', 'tags': ['positivo'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Bé!', 'tags': ['positivo'], 'idioma': ['CA'], 'imagen': 'idle'},
-                    {'frase': 'OK', 'tags': ['positivo'], 'idioma': ['ES', 'CA', 'EN'], 'imagen': 'feliz'}, {'frase': 'Pos OK.', 'tags': ['respuesta', 'estado'], 'idioma': ['ES', 'CA'], 'imagen': 'idle'}, {'frase': 'Pos OK.', 'tags': ['positivo'], 'idioma': ['ES', 'CA'], 'imagen': 'idle'}]
         is_pregunta = "?" in frase
         frase = frase.lower()
         try:
-            return random.choice(list(filter(lambda entry: frase in entry["frase"].lower() or entry["frase"].lower() in frase, self._db.sheet + basic_sentences)))
+            return random.choice(list(filter(lambda entry: frase in entry["frase"].lower() or entry["frase"].lower() in frase, self._db.sheet + self._basic_sentences)))
         except:
             # print("dame_info_frase devuelve \"default\"")
             return {"frase": frase, "tags": ["pregunta" if is_pregunta else "respuesta"], "idioma": [], "imagen": "idle"}
@@ -867,7 +869,7 @@ class AI(Bot):
             appropriate_answers = []
             user_tags = info["tags"]
             lang = info["idioma"]
-            for entry in self._db.sheet:
+            for entry in self._db.sheet + self._basic_sentences:
                 # print("dame_respuesta,", entry)
                 if entry["frase"] == frase:
                     continue
