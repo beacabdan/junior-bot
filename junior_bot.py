@@ -692,6 +692,8 @@ class DriveBot(Bot):
             self._sheet = self.read_worksheet(sheet)
             self._openSheet = sheet
         except:
+            self._sheet = None
+            self._openSheet = None
             print("(DRIVEBOT) No he podido encontrar ningún archivo llamado \"" + file + "\". Lo siento.")
 
     def look_for_file(self, nombre_archivo):
