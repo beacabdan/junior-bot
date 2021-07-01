@@ -863,7 +863,7 @@ class AI(Bot):
             user_tags = info["tags"]
             lang = info["idioma"]
             for entry in self._db.sheet:
-                print("dame_respuesta,", entry)
+                # print("dame_respuesta,", entry)
                 if entry["frase"] == frase:
                     continue
                 same_lang = False
@@ -874,7 +874,7 @@ class AI(Bot):
                     continue
                 if "pregunta" in user_tags and "respuesta" not in entry["tags"] or "respuesta" in user_tags and ("pregunta" in entry["tags"] and not "respuesta" in entry["tags"]) or "pregunta" not in user_tags and "pregunta" in entry["tags"]:
                     continue
-                print("dame_respuesta, conditions apply")
+                # print("dame_respuesta, conditions apply")
                 appropriate = True
                 for tag in entry["tags"]:
                     if tag not in user_tags + ["pregunta", "respuesta"]:
@@ -883,7 +883,7 @@ class AI(Bot):
                     appropriate_answers.append(entry)
                 if "orden" in user_tags:
                     appropriate_answers = ["He recibido una orden. Intento llevarla a cabo."]
-            print("dame_respuesta, lista de frases lista")
+            # print("dame_respuesta, lista de frases lista")
             frase = random.choice(appropriate_answers)
             if images:
                 try:
