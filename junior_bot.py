@@ -689,7 +689,7 @@ class DriveBot(Bot):
         self._sheet = None
         self._openSheet = None
         self._document = None
-        
+
         try:
             if file != "":
                 self.look_for_file(file)
@@ -697,6 +697,10 @@ class DriveBot(Bot):
             self._openSheet = sheet
         except:
             print("(DRIVEBOT) No he podido encontrar ningún archivo llamado \"" + file + "\". Lo siento.")
+            return
+
+        if file != "":
+            print("(DRIVEBOT) Inicializado.")
 
     def look_for_file(self, nombre_archivo):
         gfile = self.drive.ListFile({'q': "title contains '" + nombre_archivo + "'"}).GetList()[0]
@@ -796,8 +800,7 @@ class AI(Bot):
         self._db = None
 
         super().__init__()
-        if file != "":
-            self._db = DriveBot(file)
+        self._db = DriveBot("")
         print("(AI) Inicializada.")
 
     # vvvv para housebot vvvvv
