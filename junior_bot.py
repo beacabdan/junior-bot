@@ -686,15 +686,16 @@ class DriveBot(Bot):
         self.gc = gspread.authorize(gauth.credentials)
         self.drive = GoogleDrive(gauth)
 
+        self._sheet = None
+        self._openSheet = None
+        self._document = None
+        
         try:
             if file != "":
                 self.look_for_file(file)
             self._sheet = self.read_worksheet(sheet)
             self._openSheet = sheet
         except:
-            self._sheet = None
-            self._openSheet = None
-            self._document = None
             print("(DRIVEBOT) No he podido encontrar ningún archivo llamado \"" + file + "\". Lo siento.")
 
     def look_for_file(self, nombre_archivo):
