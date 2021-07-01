@@ -809,7 +809,7 @@ class AI(Bot):
                            {'frase': 'OK', 'tags': ['positivo'], 'idioma': ['ES', 'CA', 'EN'], 'imagen': 'feliz'}, {'frase': 'Pos OK.', 'tags': ['respuesta', 'estado'], 'idioma': ['ES', 'CA'], 'imagen': 'idle'}, {'frase': 'Pos OK.', 'tags': ['positivo'], 'idioma': ['ES', 'CA'], 'imagen': 'idle'}]
 
         super().__init__()
-        self._db = DriveBot("")
+        self._db = DriveBot(file)
         print("(AI) Inicializada.")
 
     # vvvv para housebot vvvvv
