@@ -750,9 +750,9 @@ class DriveBot(Bot):
                 row = worksheet.row_values(r)
                 sheet.append({"frase": row[0], "tags": row[1].split(", "), "idioma": row[2].split(", "), "imagen": row[3]})
             self._openSheet = title
-            self._sheet = sheet
         except:
             pass
+        self._sheet = sheet
         return sheet
 
 
