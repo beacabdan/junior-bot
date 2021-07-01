@@ -736,7 +736,13 @@ class DriveBot(Bot):
         self._document.clear()
 
     def read_worksheet(self, title):
-        sheet = []
+        sheet = [{'frase': 'Hola', 'tags': ['saludo'], 'idioma': ['ES', 'CA'], 'imagen': 'idle'}, {'frase': 'Ei', 'tags': ['saludo'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Hey', 'tags': ['saludo'], 'idioma': ['EN'], 'imagen': 'idle'}, {'frase': 'Hello', 'tags': ['saludo'], 'idioma': ['EN'], 'imagen': 'idle'}, {'frase': 'Buenos días', 'tags': ['saludo', 'mañana'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Bon dia', 'tags': ['saludo', 'mañana'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Bona tarda', 'tags': ['saludo', 'tarde'], 'idioma': ['CA'], 'imagen': 'idle'},
+                    {'frase': 'Ciao', 'tags': ['saludo', 'despedida'], 'idioma': ['ES', 'CA', 'EN'], 'imagen': 'feliz'}, {'frase': 'Adiós', 'tags': ['despedida'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Adeu', 'tags': ['despedida'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Déu', 'tags': ['despedida'], 'idioma': ['ES', 'CA'], 'imagen': 'idle'}, {'frase': 'Adeu-siau', 'tags': ['despedida'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Déu-vos-guard', 'tags': ['despedida'], 'idioma': ['CA'], 'imagen': 'idle'},
+                    {'frase': 'Muy bien, ¿qué tal tú?', 'tags': ['respuesta', 'pregunta', 'estado'], 'idioma': ['ES'], 'imagen': 'feliz'}, {'frase': '¡Bien! ¿Tú?', 'tags': ['respuesta', 'pregunta', 'estado'], 'idioma': ['ES'], 'imagen': 'feliz'}, {'frase': '¡Muy bien!', 'tags': ['respuesta', 'estado', 'positivo'], 'idioma': ['ES'], 'imagen': 'feliz'}, {'frase': 'Muy bien, ¿qué tal tú?', 'tags': ['respuesta', 'pregunta', 'estado'], 'idioma': ['ES'], 'imagen': 'feliz'}, {'frase': 'Bien, ¿tú?', 'tags': ['respuesta', 'pregunta', 'estado'], 'idioma': ['ES'], 'imagen': 'feliz'},
+                    {'frase': '¿Qué tal?', 'tags': ['pregunta', 'estado'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Com va?', 'tags': ['pregunta', 'estado'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Bé, què tal tu?', 'tags': ['pregunta', 'estado'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Molt bé!', 'tags': ['respuesta', 'estado'], 'idioma': ['CA'], 'imagen': 'feliz'}, {'frase': '¿Qué temperatura hace ahora?', 'tags': ['pregunta', 'temperatura'], 'idioma': ['ES'], 'imagen': 'idle'},
+                    {'frase': 'Ahora mismo estamos a #### grados.', 'tags': ['respuesta', 'temperatura'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': '¡Qué calor!', 'tags': ['pregunta', 'temperatura'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': '¡Sube la persiana!', 'tags': ['orden', 'persiana'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Vale.', 'tags': ['positivo'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': '¡Genial!', 'tags': ['respuesta', 'estado'], 'idioma': ['ES'], 'imagen': 'feliz'},
+                    {'frase': 'Bien.', 'tags': ['respuesta', 'estado'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Sí, ¡qué temperatura!', 'tags': ['temperatura'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Molt bé!', 'tags': ['positivo'], 'idioma': ['CA'], 'imagen': 'feliz'}, {'frase': '¡Genial!', 'tags': ['positivo'], 'idioma': ['ES'], 'imagen': 'feliz'}, {'frase': 'Bien.', 'tags': ['positivo'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Bé!', 'tags': ['positivo'], 'idioma': ['CA'], 'imagen': 'idle'},
+                    {'frase': 'OK', 'tags': ['positivo'], 'idioma': ['ES', 'CA', 'EN'], 'imagen': 'feliz'}, {'frase': 'Pos OK.', 'tags': ['respuesta', 'estado'], 'idioma': ['ES', 'CA'], 'imagen': 'idle'}, {'frase': 'Pos OK.', 'tags': ['positivo'], 'idioma': ['ES', 'CA'], 'imagen': 'idle'}]
         try:
             worksheet = self.document.worksheet(title)
             rows = len(worksheet.col_values(1))
@@ -747,13 +753,7 @@ class DriveBot(Bot):
             self._sheet = sheet
         except:
             pass
-        return sheet + [{'frase': 'Hola', 'tags': ['saludo'], 'idioma': ['ES', 'CA'], 'imagen': 'idle'}, {'frase': 'Ei', 'tags': ['saludo'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Hey', 'tags': ['saludo'], 'idioma': ['EN'], 'imagen': 'idle'}, {'frase': 'Hello', 'tags': ['saludo'], 'idioma': ['EN'], 'imagen': 'idle'}, {'frase': 'Buenos días', 'tags': ['saludo', 'mañana'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Bon dia', 'tags': ['saludo', 'mañana'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Bona tarda', 'tags': ['saludo', 'tarde'], 'idioma': ['CA'], 'imagen': 'idle'},
-                        {'frase': 'Ciao', 'tags': ['saludo', 'despedida'], 'idioma': ['ES', 'CA', 'EN'], 'imagen': 'feliz'}, {'frase': 'Adiós', 'tags': ['despedida'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Adeu', 'tags': ['despedida'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Déu', 'tags': ['despedida'], 'idioma': ['ES', 'CA'], 'imagen': 'idle'}, {'frase': 'Adeu-siau', 'tags': ['despedida'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Déu-vos-guard', 'tags': ['despedida'], 'idioma': ['CA'], 'imagen': 'idle'},
-                        {'frase': 'Muy bien, ¿qué tal tú?', 'tags': ['respuesta', 'pregunta', 'estado'], 'idioma': ['ES'], 'imagen': 'feliz'}, {'frase': '¡Bien! ¿Tú?', 'tags': ['respuesta', 'pregunta', 'estado'], 'idioma': ['ES'], 'imagen': 'feliz'}, {'frase': '¡Muy bien!', 'tags': ['respuesta', 'estado', 'positivo'], 'idioma': ['ES'], 'imagen': 'feliz'}, {'frase': 'Muy bien, ¿qué tal tú?', 'tags': ['respuesta', 'pregunta', 'estado'], 'idioma': ['ES'], 'imagen': 'feliz'}, {'frase': 'Bien, ¿tú?', 'tags': ['respuesta', 'pregunta', 'estado'], 'idioma': ['ES'], 'imagen': 'feliz'},
-                        {'frase': '¿Qué tal?', 'tags': ['pregunta', 'estado'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Com va?', 'tags': ['pregunta', 'estado'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Bé, què tal tu?', 'tags': ['pregunta', 'estado'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Molt bé!', 'tags': ['respuesta', 'estado'], 'idioma': ['CA'], 'imagen': 'feliz'}, {'frase': '¿Qué temperatura hace ahora?', 'tags': ['pregunta', 'temperatura'], 'idioma': ['ES'], 'imagen': 'idle'},
-                        {'frase': 'Ahora mismo estamos a #### grados.', 'tags': ['respuesta', 'temperatura'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': '¡Qué calor!', 'tags': ['pregunta', 'temperatura'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': '¡Sube la persiana!', 'tags': ['orden', 'persiana'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Vale.', 'tags': ['positivo'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': '¡Genial!', 'tags': ['respuesta', 'estado'], 'idioma': ['ES'], 'imagen': 'feliz'},
-                        {'frase': 'Bien.', 'tags': ['respuesta', 'estado'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Sí, ¡qué temperatura!', 'tags': ['temperatura'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Molt bé!', 'tags': ['positivo'], 'idioma': ['CA'], 'imagen': 'feliz'}, {'frase': '¡Genial!', 'tags': ['positivo'], 'idioma': ['ES'], 'imagen': 'feliz'}, {'frase': 'Bien.', 'tags': ['positivo'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Bé!', 'tags': ['positivo'], 'idioma': ['CA'], 'imagen': 'idle'},
-                        {'frase': 'OK', 'tags': ['positivo'], 'idioma': ['ES', 'CA', 'EN'], 'imagen': 'feliz'}, {'frase': 'Pos OK.', 'tags': ['respuesta', 'estado'], 'idioma': ['ES', 'CA'], 'imagen': 'idle'}, {'frase': 'Pos OK.', 'tags': ['positivo'], 'idioma': ['ES', 'CA'], 'imagen': 'idle'}]
+        return sheet
 
 
 class TokenEmbedding:
@@ -798,6 +798,7 @@ class AI(Bot):
         self._detector = None
         self.diccionario = None
         self.glove_6b50d = None
+        self._db = None
 
         super().__init__()
         if file != "":
@@ -862,7 +863,7 @@ class AI(Bot):
             user_tags = info["tags"]
             lang = info["idioma"]
             for entry in self._db.sheet:
-                # print("dame_respuesta,", entry)
+                print("dame_respuesta,", entry)
                 if entry["frase"] == frase:
                     continue
                 same_lang = False
@@ -873,7 +874,7 @@ class AI(Bot):
                     continue
                 if "pregunta" in user_tags and "respuesta" not in entry["tags"] or "respuesta" in user_tags and ("pregunta" in entry["tags"] and not "respuesta" in entry["tags"]) or "pregunta" not in user_tags and "pregunta" in entry["tags"]:
                     continue
-                # print("dame_respuesta, conditions apply")
+                print("dame_respuesta, conditions apply")
                 appropriate = True
                 for tag in entry["tags"]:
                     if tag not in user_tags + ["pregunta", "respuesta"]:
@@ -882,7 +883,7 @@ class AI(Bot):
                     appropriate_answers.append(entry)
                 if "orden" in user_tags:
                     appropriate_answers = ["He recibido una orden. Intento llevarla a cabo."]
-            # print("dame_respuesta, lista de frases lista")
+            print("dame_respuesta, lista de frases lista")
             frase = random.choice(appropriate_answers)
             if images:
                 try:
@@ -893,7 +894,6 @@ class AI(Bot):
                     pass
             return frase["frase"]
         except:
-            # print("algo ha ido mal en dame_respuesta")
             pass
         return "Lo siento. No te he entendido."
 
