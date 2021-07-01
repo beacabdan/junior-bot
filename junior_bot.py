@@ -898,7 +898,12 @@ class AI(Bot):
                     img = cv2.resize(img, (int(img.shape[1] / img.shape[1] * 100), int(img.shape[0] / img.shape[1] * 100)))
                     cv2_imshow(img)
                 except:
-                    pass
+                    try:
+                        img = cv2.imread(frase["imagen"] + ".png", cv2.IMREAD_UNCHANGED)
+                        img = cv2.resize(img, (int(img.shape[1] / img.shape[1] * 100), int(img.shape[0] / img.shape[1] * 100)))
+                        cv2_imshow(img)
+                    except:
+                        pass
             return frase["frase"]
         except:
             pass
