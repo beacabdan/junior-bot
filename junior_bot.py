@@ -977,7 +977,7 @@ class AI(Bot):
         fig = plt.figure(figsize=(7, 7))
         plt.grid(False)
         plt.imshow(image)
-        plt.clf()
+        # plt.clf()
         # plt.close("all")
 
     def download_and_resize_image(self, url, new_width, new_height, display=False):
