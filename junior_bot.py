@@ -966,6 +966,7 @@ class AI(Bot):
         plt.grid(False)
         plt.imshow(image)
         plt.clf()
+        plt.close("all")
 
     def download_and_resize_image(self, url, new_width, new_height, display=False):
         _, filename = tempfile.mkstemp(suffix=".jpg")
