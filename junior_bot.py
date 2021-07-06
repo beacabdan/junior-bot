@@ -799,6 +799,7 @@ class AI(Bot):
         self.diccionario = None
         self.glove_6b50d = None
         self._db = None
+        self._currentframe = 1
 
         self._basic_sentences = [{'frase': 'Hola', 'tags': ['saludo'], 'idioma': ['ES', 'CA'], 'imagen': 'idle'}, {'frase': 'Ei', 'tags': ['saludo'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Hey', 'tags': ['saludo'], 'idioma': ['EN'], 'imagen': 'idle'}, {'frase': 'Hello', 'tags': ['saludo'], 'idioma': ['EN'], 'imagen': 'idle'}, {'frase': 'Buenos días', 'tags': ['saludo', 'mañana'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Bon dia', 'tags': ['saludo', 'mañana'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Bona tarda', 'tags': ['saludo', 'tarde'], 'idioma': ['CA'], 'imagen': 'idle'},
                            {'frase': 'Ciao', 'tags': ['saludo', 'despedida'], 'idioma': ['ES', 'CA', 'EN'], 'imagen': 'feliz'}, {'frase': 'Adiós', 'tags': ['despedida'], 'idioma': ['ES'], 'imagen': 'idle'}, {'frase': 'Adeu', 'tags': ['despedida'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Déu', 'tags': ['despedida'], 'idioma': ['ES', 'CA'], 'imagen': 'idle'}, {'frase': 'Adeu-siau', 'tags': ['despedida'], 'idioma': ['CA'], 'imagen': 'idle'}, {'frase': 'Déu-vos-guard', 'tags': ['despedida'], 'idioma': ['CA'], 'imagen': 'idle'},
@@ -920,6 +921,17 @@ class AI(Bot):
         self._model = LinearRegression().fit(x, y)
         print("(IA) Modelo entrenado, listo para usar.")
 
+    def get_frame(self, frame=-1):
+        if frame < 1:
+            frame = self._currentframe
+        image_url = "https://beacabdan.github.io/cj21/dashcam/frame%20(" + str(frame) + ").jpg"
+        try:
+            objects = self.detect_objects(image_url, objects=5)
+        except:
+            objects = [None]
+        self._currentframe = (frame % 75) + 1
+        return objects
+
     def predict(self, x):
         return self._model.predict(np.array(x).reshape(1, -1))
 
@@ -965,8 +977,8 @@ class AI(Bot):
         fig = plt.figure(figsize=(7, 7))
         plt.grid(False)
         plt.imshow(image)
-        # plt.clf()
-        plt.close("all")
+        plt.clf()
+        # plt.close("all")
 
     def download_and_resize_image(self, url, new_width, new_height, display=False):
         _, filename = tempfile.mkstemp(suffix=".jpg")
