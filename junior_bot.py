@@ -921,7 +921,7 @@ class AI(Bot):
         self._model = LinearRegression().fit(x, y)
         print("(IA) Modelo entrenado, listo para usar.")
 
-    def get_frame(self, frame=-1):
+    def get_frame(self, frame=-1, jump=1):
         if frame < 1:
             frame = self._currentframe
         image_url = "https://beacabdan.github.io/cj21/dashcam/frame%20(" + str(frame) + ").jpg"
@@ -929,7 +929,7 @@ class AI(Bot):
             objects = self.detect_objects(image_url, objects=3)
         except:
             objects = []
-        self._currentframe = (frame % 75) + 1
+        self._currentframe = frame + jump
         return objects
 
     def predict(self, x):
@@ -974,11 +974,9 @@ class AI(Bot):
 
     @staticmethod
     def display_image(image):
-        fig = plt.figure(figsize=(7, 7))
+        plt.figure(figsize=(7, 7))
         plt.grid(False)
         plt.imshow(image)
-        # plt.clf()
-        # plt.close("all")
 
     def download_and_resize_image(self, url, new_width, new_height, display=False):
         _, filename = tempfile.mkstemp(suffix=".jpg")
