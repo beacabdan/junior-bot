@@ -926,9 +926,9 @@ class AI(Bot):
             frame = self._currentframe
         image_url = "https://beacabdan.github.io/cj21/dashcam/frame%20(" + str(frame) + ").jpg"
         try:
-            objects = self.detect_objects(image_url, objects=5)
+            objects = self.detect_objects(image_url, objects=3)
         except:
-            objects = [None]
+            objects = []
         self._currentframe = (frame % 75) + 1
         return objects
 
