@@ -1037,7 +1037,6 @@ class AI(Bot):
         converted_img = tf.image.convert_image_dtype(img, tf.float32)[tf.newaxis, ...]
         result = detector(converted_img)
         result = {key: value.numpy() for key, value in result.items()}
-        print(result)
         if display:
             image_with_boxes = self.draw_boxes(img.numpy(), result["detection_boxes"], result["detection_class_entities"], result["detection_scores"], log)
             self.display_image(image_with_boxes)
