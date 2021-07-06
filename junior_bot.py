@@ -965,6 +965,7 @@ class AI(Bot):
         fig = plt.figure(figsize=(7, 7))
         plt.grid(False)
         plt.imshow(image)
+        plt.clf()
 
     def download_and_resize_image(self, url, new_width, new_height, display=False):
         _, filename = tempfile.mkstemp(suffix=".jpg")
@@ -977,6 +978,7 @@ class AI(Bot):
         pil_image_rgb.save(filename, format="JPEG", quality=90)
         if display:
             self.display_image(pil_image)
+
         return filename
 
     def draw_bounding_box_on_image(self, image, ymin, xmin, ymax, xmax, color, font, thickness=4, display_str_list=()):
