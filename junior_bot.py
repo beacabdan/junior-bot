@@ -921,6 +921,9 @@ class AI(Bot):
         self._model = LinearRegression().fit(x, y)
         print("(IA) Modelo entrenado, listo para usar.")
 
+    def set_frame(self, frame):
+        self._currentframe = max(min(frame, 75), 1)
+
     def get_frame(self, frame=-1, jump=1, display=True, num_objects=3):
         if frame < 1:
             frame = self._currentframe
