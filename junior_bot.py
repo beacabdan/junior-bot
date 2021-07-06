@@ -921,12 +921,12 @@ class AI(Bot):
         self._model = LinearRegression().fit(x, y)
         print("(IA) Modelo entrenado, listo para usar.")
 
-    def get_frame(self, frame=-1, jump=1):
+    def get_frame(self, frame=-1, jump=1, display=True, num_objects=3):
         if frame < 1:
             frame = self._currentframe
         image_url = "https://beacabdan.github.io/cj21/dashcam/frame%20(" + str(frame) + ").jpg"
         try:
-            objects = self.detect_objects(image_url, objects=3)
+            objects = self.detect_objects(image_url, objects=num_objects, display=display)
         except:
             objects = []
         self._currentframe = frame + jump
